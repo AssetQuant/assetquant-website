@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Channel performance dashboard | AssetQuant</title>
+<meta name="description" content="Interactive demonstration: a year of marketplace advertising performance for a multi-location food group, with every metric computed live.">
+<style>
+:root{
+  --navy:#0d2a5e; --blue:#2563eb; --ink:#33415c; --soft:#64748b;
+  --mist:#f3f7fd; --line:#e2e9f4; --white:#fff; --teal:#0e8a6d; --red:#b3402a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--white);line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:800;font-size:18px;color:var(--navy)}
+.brand span{color:var(--blue)}
+.back{font-size:13.5px;font-weight:500;color:var(--blue)}
+.back:hover{text-decoration:underline}
+.head{padding:44px 0 20px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.kicker{display:block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1{font-size:clamp(26px,3.6vw,38px);color:var(--navy);letter-spacing:-.02em;font-weight:800;line-height:1.1}
+.sub{margin-top:8px;color:var(--soft);font-size:15px;max-width:64ch}
+.pill{font-size:12px;font-weight:600;color:#7a5a12;background:#fdf4e0;border:1px solid #f3e0b3;border-radius:999px;padding:6px 12px;white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:11px;overflow:hidden;margin:6px 0 2px}
+.seg button{font:inherit;font-size:13px;font-weight:700;padding:9px 18px;background:var(--white);color:var(--soft);border:none;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--blue);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;padding:18px 0 8px}
+.kpi{background:var(--mist);border-radius:12px;padding:16px 18px}
+.kpi .l{font-size:12.5px;color:var(--soft);font-weight:500}
+.kpi .v{font-size:27px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:12px;font-weight:600;margin-top:2px;color:var(--soft)}
+.panel{border:1px solid var(--line);border-radius:14px;margin-top:20px;overflow:hidden}
+.panel-h{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+.panel-h h2{font-size:16.5px;color:var(--navy);font-weight:700}
+.panel-h .hint{font-size:12px;color:var(--soft)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;padding:12px 18px 0;font-size:12px;color:var(--soft);font-weight:600}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px}
+.chartbox{position:relative;height:280px;padding:8px 14px 16px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.chartbox.h250{height:250px}.chartbox.h214{height:214px}.scroll-x{overflow-x:auto}
+@media (max-width:900px){.duo{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead th{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft);font-weight:700;text-align:right;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th:first-child{text-align:left}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:none}
+tbody td:first-child{text-align:left}
+.cname{font-weight:700;color:var(--navy)}
+.ctype{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 8px;margin-top:3px}
+.ty-promo{background:#dcf2ea;color:#0b6e57}
+.ty-place{background:#dce8fb;color:#1d4fbd}
+.chan{font-size:12px;color:var(--soft);font-weight:600}
+.roas{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
+.roas .track{width:64px;height:6px;border-radius:3px;background:#e9eef7;overflow:hidden}
+.roas .track i{display:block;height:100%;border-radius:3px}
+.roas b{min-width:38px;text-align:right}
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:26px 0 70px}
+.find{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:15px 17px}
+.find b{display:block;color:var(--navy);font-size:14.5px;margin-bottom:4px}
+.find p{font-size:13px;color:var(--soft)}
+.foot{border-top:1px solid var(--line);padding:20px 0 38px;font-size:12.5px;color:var(--soft)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+</style>
+
+<style>.aq-demo-disclosure{max-width:1140px;margin:16px auto 0;padding:11px 16px;border:1px solid #c9daf0;background:#f3f8ff;color:#405b80;border-radius:8px;font:12px/1.5 Arial,sans-serif;display:flex;gap:10px;align-items:flex-start}.aq-demo-disclosure strong{color:#071b54;white-space:nowrap}.aq-demo-disclosure span{flex:1}@media(max-width:700px){.aq-demo-disclosure{margin:12px 14px 0;display:block}.aq-demo-disclosure strong{display:block;margin-bottom:3px;white-space:normal}}</style>
+
+<style>
+/* V58.1 — canonical AssetQuant lockup on internal demo pages */
+.brand-lockup{display:inline-flex!important;align-items:center!important;gap:8px!important;color:#0d2a5e!important;font-weight:800!important;text-decoration:none!important}
+.brand-lockup img{display:block;width:54px;height:34px;object-fit:contain;flex:none}
+.brand-lockup .brand-wordmark{color:#0d2a5e!important;font-size:18px;line-height:1;letter-spacing:-.025em}
+@media(max-width:640px){.brand-lockup{gap:6px!important}.brand-lockup img{width:46px;height:30px}.brand-lockup .brand-wordmark{font-size:16px}}
+</style>
+<style>html.aq-embed .aq-demo-disclosure,html.aq-embed .topbar{display:none!important}html.aq-embed .head{padding-top:26px}</style>
+</head>
+<body>
+<div class="aq-demo-disclosure" role="note"><strong>Illustrative demonstration · Synthetic data</strong><span>Organisations, transactions, documents, figures and outcomes shown here are fictional or modelled for demonstration purposes. No client, bank or confidential data is used. Results are illustrative, not actual client outcomes or professional advice.</span></div>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand brand-lockup" href="../index.html#capabilities" aria-label="AssetQuant home"><img src="../assets/logo-approved-aq.png" alt="AQ"><span class="brand-wordmark">AssetQuant</span></a>
+  <a class="back" href="../index.html#capabilities">← Back to AssetQuant</a>
+</div></div>
+
+<div class="wrap">
+  <header class="head">
+    <div>
+      <span class="kicker">Financial &amp; business analytics · Interactive demo</span>
+      <h1>Channel performance dashboard</h1>
+      <p class="sub">Twelve months of marketplace advertising for a multi-location food group. Every return, cost-per-order and basket figure is derived live from the underlying sales, spend and order data; nothing is typed in.</p>
+    </div>
+  </header>
+
+  <div class="seg" id="seg" role="group" aria-label="Channel filter">
+    <button type="button" data-c="all" class="on">Combined</button>
+    <button type="button" data-c="a">Marketplace A</button>
+    <button type="button" data-c="b">Marketplace B</button>
+  </div>
+
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+
+  <section class="panel">
+    <div class="panel-h"><h2>Month by month: attributed sales vs ad spend</h2><span class="hint">Oct 2025 → Sep 2026 · hover for monthly return</span></div>
+    <div class="legend" id="legMonthly"></div>
+    <div class="chartbox"><canvas id="monthly" role="img" aria-label="Monthly attributed sales as bars and advertising spend as a line, October 2025 to September 2026"></canvas></div>
+  </section>
+
+  <div class="duo">
+    <section class="panel">
+      <div class="panel-h"><h2>Return by weekday</h2><span class="hint">Average return per $1 of spend</span></div>
+      <div class="chartbox h250"><canvas id="dow" role="img" aria-label="Bar chart of average return on ad spend by day of week"></canvas></div>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Where each dollar goes</h2><span class="hint">Share of annual ad spend</span></div>
+      <div class="legend" id="legMix"></div>
+      <div class="chartbox h214"><canvas id="mix" role="img" aria-label="Doughnut chart of advertising spend mix by campaign type and channel"></canvas></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="panel-h"><h2>Campaign economics</h2><span class="hint">Return, cost per order and basket size, computed from spend, sales and orders</span></div>
+    <div class="scroll-x"><table id="camps">
+      <thead><tr><th>Campaign</th><th>Channel</th><th>Spend</th><th>Attributed sales</th><th>Orders</th><th>Return</th><th>Cost / order</th><th>Avg basket</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section class="findings" aria-label="What the data says">
+    <div class="find"><b>Promotions out-earn placements</b><p>Promotion campaigns average a 3.9x return against 3.5x for sponsored placements, but placements drive 1.6x the order volume, so the mix question is reach versus efficiency, not either-or.</p></div>
+    <div class="find"><b>The weekend carries the week</b><p>Friday and Saturday return around 5x per dollar against roughly 3.5x midweek. Shifting the 2.0x late-night placement budget toward weekend windows is the clearest reallocation candidate.</p></div>
+    <div class="find"><b>Marketplace A converts a larger basket</b><p>Baskets on Marketplace A run about $4.50 higher than Marketplace B, so it is worth testing B's 4.6x weekend bundle promotion on A's audience.</p></div>
+  </section>
+</div>
+
+
+<script src="../assets/vendor/chartjs/chart.umd.min.js"></script>
+<script>
+const MONTHS = ["Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"];
+const A = {
+  sales:[118.4,124.9,141.2,112.6,116.8,127.5,133.1,139.8,146.2,151.9,158.4,163.7],
+  spend:[21.2,22.0,24.6,20.1,20.6,21.9,22.8,23.5,24.1,24.9,25.6,26.2],
+  orders:[3120,3280,3690,2980,3080,3350,3490,3660,3810,3950,4110,4240]
+};
+const B = {
+  sales:[74.3,78.1,88.6,70.2,72.9,79.4,83.0,87.2,92.5,97.8,103.6,108.9],
+  spend:[16.1,16.6,18.4,15.2,15.6,16.5,17.1,17.7,18.3,19.0,19.8,20.5],
+  orders:[2210,2320,2620,2090,2170,2360,2470,2590,2740,2890,3060,3210]
+};
+const CAMPS = [
+  {name:"Free-delivery threshold promo", type:"promo", chan:"Marketplace A", spend:14.2, sales:71.4, orders:1890},
+  {name:"Weekend bundle promo",          type:"promo", chan:"Marketplace B", spend:9.8,  sales:44.6, orders:1260},
+  {name:"Sponsored placement: core menu", type:"place", chan:"Marketplace A", spend:38.5, sales:158.2, orders:4120},
+  {name:"Sponsored placement: new locations", type:"place", chan:"Marketplace B", spend:22.4, sales:78.7, orders:2310},
+  {name:"Lapsed-customer offer",         type:"promo", chan:"Marketplace A", spend:11.6, sales:39.0, orders:1050},
+  {name:"Lunch daypart placement",       type:"place", chan:"Marketplace A", spend:17.3, sales:49.9, orders:1480},
+  {name:"First-order discount",          type:"promo", chan:"Marketplace B", spend:13.9, sales:35.6, orders:1120},
+  {name:"Late-night placement",          type:"place", chan:"Marketplace B", spend:8.1,  sales:15.8, orders:470}
+];
+const DOW = { labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], roas:[3.4,3.2,3.5,3.9,4.9,5.1,4.3] };
+
+const NAVY="#0d2a5e", BLUE="#2563eb", LBLUE="#9dbdf0", TEAL="#0e8a6d", GRID="#eef2f9", MUT="#64748b";
+let channel = "all";
+const $ = id => document.getElementById(id);
+const sum = a => a.reduce((x,y)=>x+y,0);
+const k$ = v => "$"+Math.round(v).toLocaleString("en-US")+"k";
+
+function sel(){
+  if(channel==="a") return {sales:A.sales, spend:A.spend, orders:A.orders};
+  if(channel==="b") return {sales:B.sales, spend:B.spend, orders:B.orders};
+  return {
+    sales:A.sales.map((v,i)=>v+B.sales[i]),
+    spend:A.spend.map((v,i)=>v+B.spend[i]),
+    orders:A.orders.map((v,i)=>v+B.orders[i])
+  };
+}
+
+function renderKpis(){
+  const d = sel();
+  const S=sum(d.sales), P=sum(d.spend), O=sum(d.orders);
+  const roas=S/P, aov=S*1000/O, cpo=P*1000/O;
+  const yoy = (d.sales[11]/d.sales[0]-1)*100;
+  $("kpis").innerHTML = `
+    <div class="kpi"><div class="l">Attributed sales, 12 mo</div><div class="v">$${(S/1000).toFixed(2)}m</div><div class="d" style="color:var(--teal)">+${yoy.toFixed(0)}% Oct → Sep run-rate</div></div>
+    <div class="kpi"><div class="l">Ad spend, 12 mo</div><div class="v">${k$(P)}</div><div class="d">${(P/S*100).toFixed(1)}% of attributed sales</div></div>
+    <div class="kpi"><div class="l">Blended return</div><div class="v">${roas.toFixed(1)}x</div><div class="d">Sales ÷ spend</div></div>
+    <div class="kpi"><div class="l">Orders attributed</div><div class="v">${(O/1000).toFixed(1)}k</div><div class="d">Cost per order $${cpo.toFixed(2)}</div></div>
+    <div class="kpi"><div class="l">Average basket</div><div class="v">$${aov.toFixed(2)}</div><div class="d">Sales ÷ orders</div></div>`;
+}
+
+let chMonthly, chDow, chMix;
+function renderMonthly(){
+  const d = sel();
+  const ds = [];
+  if(channel==="all"){
+    ds.push({type:"bar", label:"Sales, Marketplace A", data:A.sales, backgroundColor:BLUE, stack:"s", borderRadius:4, maxBarThickness:26});
+    ds.push({type:"bar", label:"Sales, Marketplace B", data:B.sales, backgroundColor:LBLUE, stack:"s", borderRadius:4, maxBarThickness:26});
+    $("legMonthly").innerHTML = `<span><span class="sw" style="background:${BLUE}"></span>Sales, Marketplace A</span><span><span class="sw" style="background:${LBLUE}"></span>Sales, Marketplace B</span><span><span class="sw" style="background:${NAVY};border-radius:50%"></span>Ad spend (dashed line)</span>`;
+  } else {
+    ds.push({type:"bar", label:"Attributed sales", data:d.sales, backgroundColor:BLUE, borderRadius:4, maxBarThickness:26});
+    $("legMonthly").innerHTML = `<span><span class="sw" style="background:${BLUE}"></span>Attributed sales</span><span><span class="sw" style="background:${NAVY};border-radius:50%"></span>Ad spend (dashed line)</span>`;
+  }
+  ds.push({type:"line", label:"Ad spend", data:d.spend, borderColor:NAVY, backgroundColor:NAVY, borderDash:[6,4], borderWidth:2, pointRadius:2.5, tension:.35});
+  if(chMonthly) chMonthly.destroy();
+  chMonthly = new Chart($("monthly"), {
+    data:{labels:MONTHS, datasets:ds},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{
+        footer:items=>{const i=items[0].dataIndex; return "Return this month: "+(sel().sales[i]/sel().spend[i]).toFixed(1)+"x";},
+        label:c=>` ${c.dataset.label}: $${c.parsed.y.toFixed(1)}k`
+      }}},
+      scales:{
+        x:{stacked:true, grid:{display:false}, ticks:{color:MUT, font:{size:11}}},
+        y:{stacked:true, grid:{color:GRID}, ticks:{color:MUT, font:{size:11}, callback:v=>"$"+v+"k"}}
+      }
+    }
+  });
+}
+function renderDow(){
+  if(chDow) chDow.destroy();
+  chDow = new Chart($("dow"), {
+    type:"bar",
+    data:{labels:DOW.labels, datasets:[{data:DOW.roas, backgroundColor:DOW.roas.map(v=>v>=4.5?BLUE:"#c8d9f5"), borderRadius:4, maxBarThickness:34}]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.parsed.y.toFixed(1)}x back per $1`}}},
+      scales:{x:{grid:{display:false}, ticks:{color:MUT, font:{size:11}}},
+              y:{grid:{color:GRID}, ticks:{color:MUT, font:{size:11}, callback:v=>v+"x"}, suggestedMax:5.6}}
+    }
+  });
+}
+function renderMix(){
+  const groups = [
+    ["Placements (A)", CAMPS.filter(c=>c.type==="place"&&c.chan.endsWith("A")), BLUE],
+    ["Placements (B)", CAMPS.filter(c=>c.type==="place"&&c.chan.endsWith("B")), LBLUE],
+    ["Promotions (A)", CAMPS.filter(c=>c.type==="promo"&&c.chan.endsWith("A")), TEAL],
+    ["Promotions (B)", CAMPS.filter(c=>c.type==="promo"&&c.chan.endsWith("B")), "#8fd6c0"]
+  ].map(([l,cs,col])=>({l, v:sum(cs.map(c=>c.spend)), col}));
+  const tot = sum(groups.map(g=>g.v));
+  $("legMix").innerHTML = groups.map(g=>`<span><span class="sw" style="background:${g.col}"></span>${g.l} ${(g.v/tot*100).toFixed(0)}%</span>`).join("");
+  if(chMix) chMix.destroy();
+  chMix = new Chart($("mix"), {
+    type:"doughnut",
+    data:{labels:groups.map(g=>g.l), datasets:[{data:groups.map(g=>+g.v.toFixed(1)), backgroundColor:groups.map(g=>g.col), borderWidth:2, borderColor:"#ffffff"}]},
+    options:{responsive:true, maintainAspectRatio:false, cutout:"62%",
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.label}: $${c.parsed.toFixed(1)}k spend`}}}}
+  });
+}
+function renderCamps(){
+  const rows = CAMPS.map(c=>({...c, roas:c.sales/c.spend, cpo:c.spend*1000/c.orders, aov:c.sales*1000/c.orders}))
+    .sort((a,b)=>b.roas-a.roas);
+  const maxR = Math.max(...rows.map(r=>r.roas));
+  document.querySelector("#camps tbody").innerHTML = rows.map(r=>`
+    <tr>
+      <td><span class="cname">${r.name}</span><br><span class="ctype ${r.type==="promo"?"ty-promo":"ty-place"}">${r.type==="promo"?"Promotion":"Sponsored placement"}</span></td>
+      <td class="chan">${r.chan}</td>
+      <td>$${r.spend.toFixed(1)}k</td>
+      <td>$${r.sales.toFixed(1)}k</td>
+      <td>${r.orders.toLocaleString()}</td>
+      <td><span class="roas"><span class="track"><i style="width:${(r.roas/maxR*100).toFixed(0)}%;background:${r.roas>=4?"#0e8a6d":r.roas>=3?"#2563eb":"#b45309"}"></i></span><b>${r.roas.toFixed(1)}x</b></span></td>
+      <td>$${r.cpo.toFixed(2)}</td>
+      <td>$${r.aov.toFixed(2)}</td>
+    </tr>`).join("");
+}
+
+$("seg").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  channel = b.dataset.c;
+  document.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on", x===b));
+  renderKpis(); renderMonthly();
+});
+
+renderKpis(); renderCamps(); renderMonthly(); renderDow(); renderMix();
+</script>
+<script>if(new URLSearchParams(location.search).get("embed")==="1"||/^aq-embed/.test(window.name)){document.documentElement.classList.add("aq-embed");}</script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payments &amp; exception analytics | AssetQuant</title>
+<meta name="description" content="Interactive demonstration: a retail bank's payments book analysed for exception load, fraud pressure and reconciliation health, converted into five costed moves.">
+<style>
+:root{
+  --navy:#0d2a5e; --blue:#2563eb; --lblue:#9dbdf0; --ink:#33415c; --soft:#64748b;
+  --mist:#f3f7fd; --line:#e2e9f4; --white:#fff;
+  --teal:#0e8a6d; --tealbg:#e5f4ef; --red:#b3402a; --redbg:#faece8; --amber:#b45309; --amberbg:#fdf4e0; --gold:#e7b12e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--white);line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:800;font-size:18px;color:var(--navy)}
+.brand span{color:var(--blue)}
+.back{font-size:13.5px;font-weight:500;color:var(--blue)}
+.back:hover{text-decoration:underline}
+.head{padding:44px 0 18px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.kicker{display:block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1{font-size:clamp(26px,3.6vw,38px);color:var(--navy);letter-spacing:-.02em;font-weight:800;line-height:1.1}
+h1 em{font-style:normal;color:var(--blue)}
+.sub{margin-top:8px;color:var(--soft);font-size:15px;max-width:68ch}
+.pill{font-size:12px;font-weight:600;color:#7a5a12;background:var(--amberbg);border:1px solid #f3e0b3;border-radius:999px;padding:6px 12px;white-space:nowrap}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:10px 0 14px}
+.kpi{background:var(--mist);border-radius:12px;padding:15px 16px}
+.kpi .l{font-size:12px;color:var(--soft);font-weight:500}
+.kpi .v{font-size:25px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:11.5px;font-weight:600;margin-top:2px;color:var(--soft)}
+.good{color:var(--teal)!important} .bad{color:var(--red)!important} .warn{color:var(--amber)!important}
+.headline{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 18px;font-size:14px;color:var(--ink);line-height:1.6}
+.headline b{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px}
+.steps span{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);display:inline-flex;align-items:center;gap:8px}
+.steps span b{width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:10.5px;display:inline-flex;align-items:center;justify-content:center}
+.steps span:not(:last-child):after{content:"→";color:#b9c7dc;margin-left:6px}
+
+.section{margin-top:30px}
+.sec-h{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sec-h h2{font-size:19px;color:var(--navy);font-weight:800;letter-spacing:-.01em}
+.sec-h h2 small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:3px}
+.sec-h .hint{font-size:12.5px;color:var(--soft)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid2 .span2{grid-column:1/-1}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--white);display:flex;flex-direction:column}
+.panel-in{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.panel h3{font-size:15px;color:var(--navy);font-weight:700;line-height:1.3}
+.panel .hint{font-size:12px;color:var(--soft);margin-top:-6px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--soft);font-weight:600}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.sw.ln{width:16px;height:3px;border-radius:2px}
+.sw.navy{background:var(--navy)} .sw.blue{background:var(--blue)} .sw.lblue{background:var(--lblue)} .sw.gold{background:var(--gold)} .sw.red{background:var(--red)}
+.scroll-x{overflow-x:auto}
+.guard .how-inline{display:inline;font-size:13px}
+svg text{font-family:inherit}
+.chart{width:100%;height:auto;display:block}
+.insight{margin-top:auto;border-left:3px solid var(--gold);background:#fffaf0;border-radius:0 10px 10px 0;padding:11px 13px;font-size:12.5px;color:#5c4a1e;line-height:1.55}
+.insight b{color:#3b2f10}
+.insight .arrow{color:var(--blue);font-weight:700}
+
+.heat{display:grid;gap:4px;font-size:11px}
+.heat .hc{font-weight:700;color:var(--soft);text-align:center;font-size:10.5px;padding-bottom:2px}
+.heat .hl{font-weight:700;color:var(--navy);padding-right:8px;white-space:nowrap;display:flex;align-items:center;font-size:11.5px}
+.heat .cell{border-radius:5px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.heat .cell.dk{color:#fff}
+.heat-leg{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soft);margin-top:4px}
+.heat-leg i{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#eef4fd,#9dbdf0,#2563eb,#0d2a5e)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft);font-weight:700;text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th:first-child,thead th.l{text-align:left}
+tbody td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody td:first-child,tbody td.l{text-align:left}
+tbody td:first-child{font-weight:800;color:var(--navy)}
+tbody tr:last-child td{border-bottom:none}
+.chip{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px}
+.chip.auto{background:var(--tealbg);color:var(--teal)} .chip.assist{background:#dce8fb;color:#1d4fbd} .chip.manual{background:var(--redbg);color:var(--red)}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+@media(max-width:900px){.duo{grid-template-columns:1fr}}
+.vsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px}
+.vsum .kpi{padding:12px 14px}
+.vsum .kpi .v{font-size:21px}
+
+.moves{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.move{border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;background:var(--white);position:relative;cursor:pointer;transition:.2s;display:flex;flex-direction:column;gap:8px}
+.move:hover{border-color:#b9cdf0}
+.move.on{border-color:var(--blue);box-shadow:0 10px 24px rgba(37,99,235,.10)}
+.move.na{cursor:default}
+.move .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.move .code{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--blue)}
+.move .tick{width:20px;height:20px;border-radius:6px;border:1.5px solid #c9d6ea;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:#fff;flex:none}
+.move.on .tick{background:var(--blue);border-color:var(--blue)}
+.move h3{font-size:15px;color:var(--navy);line-height:1.3}
+.move .val{display:flex;flex-wrap:wrap;gap:6px}
+.move .val span{font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--mist);color:var(--navy)}
+.move .val span.v{background:var(--tealbg);color:var(--teal)}
+.move .val span.r{background:var(--amberbg);color:var(--amber)}
+.move p{font-size:12.5px;color:var(--soft);line-height:1.55}
+.move .how{font-size:12px;color:var(--ink);border-top:1px solid var(--line);padding-top:8px;margin-top:auto}
+.move .how b{color:var(--navy)}
+.guard{border:1px solid var(--line);border-left:3px solid var(--navy);border-radius:12px;padding:15px 18px;background:var(--mist);margin-top:14px;font-size:13px;color:var(--ink)}
+.guard b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.guard small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:4px}
+.foot{border-top:1px solid var(--line);margin-top:40px;padding:20px 0 38px;font-size:12.5px;color:var(--soft)}
+.move:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+</style>
+
+<style>.aq-demo-disclosure{max-width:1140px;margin:16px auto 0;padding:11px 16px;border:1px solid #c9daf0;background:#f3f8ff;color:#405b80;border-radius:8px;font:12px/1.5 Arial,sans-serif;display:flex;gap:10px;align-items:flex-start}.aq-demo-disclosure strong{color:#071b54;white-space:nowrap}.aq-demo-disclosure span{flex:1}@media(max-width:700px){.aq-demo-disclosure{margin:12px 14px 0;display:block}.aq-demo-disclosure strong{display:block;margin-bottom:3px;white-space:normal}}</style>
+
+<style>
+/* V58.1 — canonical AssetQuant lockup on internal demo pages */
+.brand-lockup{display:inline-flex!important;align-items:center!important;gap:8px!important;color:#0d2a5e!important;font-weight:800!important;text-decoration:none!important}
+.brand-lockup img{display:block;width:54px;height:34px;object-fit:contain;flex:none}
+.brand-lockup .brand-wordmark{color:#0d2a5e!important;font-size:18px;line-height:1;letter-spacing:-.025em}
+@media(max-width:640px){.brand-lockup{gap:6px!important}.brand-lockup img{width:46px;height:30px}.brand-lockup .brand-wordmark{font-size:16px}}
+</style>
+<style>html.aq-embed .aq-demo-disclosure,html.aq-embed .topbar{display:none!important}html.aq-embed .head{padding-top:26px}</style>
+</head>
+<body>
+<div class="aq-demo-disclosure" role="note"><strong>Illustrative demonstration · Synthetic data</strong><span>Organisations, transactions, documents, figures and outcomes shown here are fictional or modelled for demonstration purposes. No client, bank or confidential data is used. Results are illustrative, not actual client outcomes or professional advice.</span></div>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand brand-lockup" href="../index.html#capabilities" aria-label="AssetQuant home"><img src="../assets/logo-approved-aq.png" alt="AQ"><span class="brand-wordmark">AssetQuant</span></a>
+  <a class="back" href="../index.html#capabilities">← Back to AssetQuant</a>
+</div></div>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <span class="kicker">Industry case · Financial services · Interactive demo</span>
+      <h1>From transaction noise to <em>fee income and retained customers.</em></h1>
+      <p class="sub">A large retail bank, about nine billion payments a year across UPI, cards, IMPS, NEFT and RTGS, analysed for exception load, fraud pressure and reconciliation health, then converted into five costed moves.</p>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+  <div class="headline"><b>Headline insight</b>UPI is 71% of transaction count but 22% of value; RTGS is 0.3% of count and 41% of value. Queues worked by alert age instead of value-at-risk leave the highest-value channel with the slowest resolution, and the fraud data shows the same inversion: the rarest typology converts to real fraud at nearly three times the rate of the noisiest one.</div>
+
+  <div class="steps" role="list" aria-label="Engagement flow"><span role="listitem"><b>1</b>Read the operation</span><span role="listitem"><b>2</b>Price the moves</span><span role="listitem"><b>3</b>The strategy</span></div>
+
+  <!-- 1 · READ -->
+  <section class="section">
+    <div class="sec-h"><h2><small>1 · Read the operation</small>Where does it actually hurt?</h2><span class="hint">Six views, one dataset, and each ends in a move</span></div>
+    <div class="grid2">
+      <div class="panel"><div class="panel-in">
+        <h3>Monthly volume and exception rate</h3><p class="hint">Transactions processed per month (bars, millions) against exception rate (line, %)</p>
+        <div class="legend"><span><span class="sw navy"></span>Transactions, millions</span><span><span class="sw ln blue"></span>Exception rate %</span></div>
+        <svg class="chart" id="c-volume" viewBox="0 0 640 250" role="img" aria-label="Monthly transaction volume and exception rate"></svg>
+        <div class="insight"><b>Insight.</b> The festive surge (Oct–Nov) lifts volume ~30%; in the baseline, exceptions rose with it. After auto-repair of the top five failure codes went live in June, exceptions fall while volume grows: festive season absorbed without adding headcount. <span class="arrow">→</span> Extend auto-repair beyond the first five codes (Move 3).</div>
+      </div></div>
+      <div class="panel"><div class="panel-in">
+        <h3>Channel mix: count vs value</h3><p class="hint">Share of transaction count and settled value by payment rail, %</p>
+        <div class="legend"><span><span class="sw blue"></span>Share of count</span><span><span class="sw gold"></span>Share of value</span></div>
+        <svg class="chart" id="c-mix" role="img" aria-label="Share of transaction count and value by channel"></svg>
+        <div class="insight"><b>Insight.</b> The count/value inversion is the structural fact of the book. Staffing follows count; risk follows value. <span class="arrow">→</span> The RTGS desk and value-weighted queues (Moves 1–2) exist to close that gap.</div>
+      </div></div>
+      <div class="panel"><div class="panel-in">
+        <h3>Fraud alerts vs confirmed fraud, by typology</h3><p class="hint">Annual alerts and confirmed cases, thousands · right-hand figure is the conversion rate</p>
+        <div class="legend"><span><span class="sw lblue"></span>Alerts</span><span><span class="sw red"></span>Confirmed fraud</span></div>
+        <svg class="chart" id="c-fraud" role="img" aria-label="Fraud alerts and confirmed cases by typology"></svg>
+        <div class="insight"><b>Insight.</b> Velocity rules generate the most alerts (88k) at an 11% hit rate; social-engineering and mule alerts are far fewer (38k) but convert at 30%. Analyst time is priced by the wrong queue. <span class="arrow">→</span> Re-weight queues by expected loss (Move 1).</div>
+      </div></div>
+      <div class="panel"><div class="panel-in">
+        <h3>Exception intensity by channel and time of day</h3><p class="hint">Exception rate, % of channel volume, by three-hour window</p>
+        <div class="heat" id="hm-bank" role="img" aria-label="Heatmap of exception rate by channel and time of day"></div>
+        <div class="heat-leg"><span>Low</span><i></i><span>High</span></div>
+        <div class="insight"><b>Insight.</b> Three hotspots, three causes: UPI 18–24h (evening consumer peak, beneficiary-bank timeouts), NEFT 09–15h (batch congestion), RTGS 15–18h (cut-off pressure). One "exception team" is actually three problems. <span class="arrow">→</span> Retry orchestration for UPI (Move 4), batch smoothing for NEFT (Move 5), a value desk for RTGS (Move 2).</div>
+      </div></div>
+      <div class="panel"><div class="panel-in">
+        <h3>The failed-payment funnel: where value leaks</h3><p class="hint">Average day: what happens to the ~88k transactions that fail on first attempt, thousands</p>
+        <svg class="chart" id="c-funnel" role="img" aria-label="Funnel of failed payments by resolution stage"></svg>
+        <div class="insight"><b>Insight.</b> ~9k payments a day end the day unresolved, and an estimated 2.4k customers sit in the churn-risk band (two or more failures in 30 days). Failed payments are a revenue problem: lost fee income today, lost customers tomorrow. <span class="arrow">→</span> Smart retry (Move 4) attacks the top of this funnel, where recovery is cheapest.</div>
+      </div></div>
+      <div class="panel"><div class="panel-in">
+        <h3>Top exception codes and repair status</h3><p class="hint">Highest-volume failure codes last quarter</p>
+        <div class="scroll-x"><table>
+          <thead><tr><th>Code</th><th class="l">Description</th><th>Monthly vol.</th><th>Avg resolution</th><th>Value at risk / item</th><th>Repair status</th></tr></thead>
+          <tbody>
+            <tr><td>U30</td><td class="l">Beneficiary bank timeout (UPI)</td><td>241,000</td><td>4.2 min</td><td>₹2,400</td><td><span class="chip auto">Auto-reversed</span></td></tr>
+            <tr><td>R03</td><td class="l">Account number mismatch (NEFT)</td><td>88,400</td><td>6.1 hrs</td><td>₹48,000</td><td><span class="chip assist">Assisted repair</span></td></tr>
+            <tr><td>C57</td><td class="l">Card settlement file variance</td><td>31,700</td><td>1.4 days</td><td>₹9,100</td><td><span class="chip assist">Assisted repair</span></td></tr>
+            <tr><td>RT9</td><td class="l">RTGS cut-off breach</td><td>2,150</td><td>2.8 days</td><td>₹41,00,000</td><td><span class="chip manual">Manual · high value</span></td></tr>
+          </tbody>
+        </table></div>
+        <div class="insight"><b>Insight.</b> Read the last two columns together: the smallest queue carries a per-item value three orders of magnitude above the biggest one, and resolves slowest. Sorting work by queue length optimises exactly the wrong thing.</div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 2 · PRICE -->
+  <section class="section">
+    <div class="sec-h"><h2><small>2 · Price the moves</small>Where should effort go first?</h2><span class="hint">Toggle moves in Section 3; the matrix, the bridge and the totals respond</span></div>
+    <div class="vsum" id="vsum"></div>
+    <div class="duo">
+      <div class="panel"><div class="panel-in">
+        <h3>Effort vs modelled annual value</h3><p class="hint">Bubble size = confidence in the estimate · dashed = enabler, value counted within other moves</p>
+        <svg class="chart" id="c-prio" viewBox="0 0 640 310" role="img" aria-label="Bubble chart of initiatives by effort and value"></svg>
+        <div class="insight"><b>Insight.</b> Queue re-weighting and the RTGS desk are process changes, not builds, with value in weeks. Smart retry is the largest prize and a genuine engineering effort; sequence it after the quick wins fund the credibility.</div>
+      </div></div>
+      <div class="panel"><div class="panel-in">
+        <h3>Modelled annual value bridge</h3><p class="hint">How the selected moves stack, ₹ crore per year</p>
+        <svg class="chart" id="c-bridge" viewBox="0 0 640 275" role="img" aria-label="Waterfall chart of modelled annual value by source"></svg>
+        <div class="insight" id="bridge-insight"></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 3 · STRATEGY -->
+  <section class="section">
+    <div class="sec-h"><h2><small>3 · The strategy</small>Five moves, process changes before builds</h2><span class="hint">Click a move to include or exclude it from the programme</span></div>
+    <div class="moves" id="moves"></div>
+    <div class="guard"><small>Guardrail · Governance</small><b>Automation with audit trails and human sign-off on value</b>Every auto-repair and retry is logged, reversible and capped; anything above the value threshold routes to a person. Model and rule performance is reviewed monthly against false-positive load and customer complaints. <b class="how-inline">How:</b> the same discipline the June rollout used: expand coverage, never relax the controls.</div>
+  </section>
+</div>
+
+
+<script>
+/* ---------- house palette + helpers ---------- */
+const C={navy:"#0d2a5e",blue:"#2563eb",lblue:"#9dbdf0",teal:"#0e8a6d",red:"#b3402a",amber:"#b45309",gold:"#e7b12e",grid:"#eef2f9",mut:"#64748b",ink:"#33415c",pale:"#c8d9f5"};
+const $=id=>document.getElementById(id);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v||1)));const n=v/p;const steps=[1,1.2,1.5,2,2.5,3,4,5,6,8,10];const m=steps.find(x=>n<=x);return m*p;}
+function ticks(max,n=4){const out=[];for(let i=0;i<=n;i++)out.push(max*i/n);return out;}
+const fmtK=v=>v>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":String(Math.round(v));
+
+/* bars (left axis) + optional line (right axis) */
+function combo(id,o){
+  const {labels,bars,line,barColor=C.navy,barColors,lineColor=C.blue,yLabel="",y1Label="",y1Max,y1Min=0,everyLabel=1,barFmt=v=>v,lineFmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=line?46:14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...bars)*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,bw=(W-pl-pr)/n,barW=bw*0.6; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  bars.forEach((v,i)=>{const x=pl+i*bw+(bw-barW)/2; out+=`<rect x="${x}" y="${y(v)}" width="${barW}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${barColors?barColors[i]:barColor}"><title>${labels[i]}: ${barFmt(v)}</title></rect>`;});
+  labels.forEach((l,i)=>{ if(i%everyLabel===0) out+=`<text x="${pl+i*bw+bw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;});
+  if(line){
+    const lMax=y1Max||niceMax(Math.max(...line)*1.1), lMin=y1Min, y1=v=>pt+(1-(v-lMin)/(lMax-lMin))*(H-pt-pb);
+    ticks(lMax).forEach(t=>out+=`<text x="${W-pr+7}" y="${y1(t)+4}" font-size="10.5" fill="${C.mut}">${+t.toFixed(2)}</text>`);
+    if(y1Label) out+=`<text x="${W-2}" y="${pt-5}" font-size="10" fill="${C.mut}" text-anchor="end">${y1Label}</text>`;
+    const pts=line.map((v,i)=>`${pl+i*bw+bw/2},${y1(v)}`).join(" ");
+    out+=`<polyline fill="none" stroke="${lineColor}" stroke-width="2.4" stroke-linejoin="round" points="${pts}"/>`;
+    line.forEach((v,i)=>out+=`<circle cx="${pl+i*bw+bw/2}" cy="${y1(v)}" r="3.2" fill="#fff" stroke="${lineColor}" stroke-width="2"><title>${labels[i]}: ${lineFmt(v)}</title></circle>`);
+  }
+  $(id).innerHTML=out;
+}
+
+/* vertical grouped bars */
+function grouped(id,o){
+  const {labels,series,yLabel="",fmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...series.flatMap(s=>s.data))*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,gw=(W-pl-pr)/n,inner=gw*0.68,bw=inner/series.length; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  labels.forEach((l,i)=>{
+    series.forEach((s,k)=>{const v=s.data[i], x=pl+i*gw+(gw-inner)/2+k*bw; out+=`<rect x="${x+1}" y="${y(v)}" width="${bw-2}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${s.color}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x+bw/2}" y="${y(v)-5}" font-size="10" font-weight="700" fill="${s.color}" text-anchor="middle">${fmt(v)}</text>`;});
+    out+=`<text x="${pl+i*gw+gw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* horizontal bars, single or grouped; optional per-row annotation */
+function hbars(id,o){
+  const {labels,series,xMax,fmt=v=>v,annot,rowH=34,labelW=150}=o;
+  const W=640,pl=labelW,pr=annot?112:70,pt=8;
+  const H=pt+labels.length*rowH+12;
+  const mx=xMax||niceMax(Math.max(...series.flatMap(s=>s.data))*1.1), x=v=>pl+v/mx*(W-pl-pr);
+  const bh=(rowH-8)/series.length; let out="";
+  ticks(mx).forEach(t=>out+=`<line x1="${x(t)}" x2="${x(t)}" y1="${pt}" y2="${H-10}" stroke="${C.grid}"/>`);
+  labels.forEach((l,i)=>{
+    const y0=pt+i*rowH+4;
+    out+=`<text x="${pl-10}" y="${y0+(rowH-8)/2+4}" font-size="11.5" font-weight="700" fill="${C.navy}" text-anchor="end">${l}</text>`;
+    series.forEach((s,k)=>{const v=s.data[i],yy=y0+k*bh,col=s.colors?s.colors[i]:s.color; out+=`<rect x="${pl}" y="${yy}" width="${Math.max(1,x(v)-pl)}" height="${bh-2}" rx="3" fill="${col}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x(v)+5}" y="${yy+bh/2+3}" font-size="10.5" font-weight="700" fill="${col}">${fmt(v)}</text>`;});
+    if(annot) out+=`<text x="${W-2}" y="${y0+(rowH-8)/2+4}" font-size="10.5" font-weight="700" fill="${C.amber}" text-anchor="end">${annot[i]}</text>`;
+  });
+  const svg=$(id); svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML=out;
+}
+
+/* heatmap in house blue scale */
+function heat(id,rows,cols,data,fmt){
+  const flat=data.flat(),mn=Math.min(...flat),mx=Math.max(...flat);
+  const stops=[[238,244,253],[157,189,240],[37,99,235],[13,42,94]];
+  const col=v=>{const t=(v-mn)/((mx-mn)||1),s=Math.min(2.999,t*3),i=Math.floor(s),f=s-i;return [0,1,2].map(k=>Math.round(stops[i][k]+(stops[i+1][k]-stops[i][k])*f));};
+  let html=`<div></div>`+cols.map(c=>`<div class="hc">${c}</div>`).join("");
+  rows.forEach((r,ri)=>{html+=`<div class="hl">${r}</div>`;cols.forEach((c,ci)=>{const v=data[ri][ci],[R,G,B]=col(v),lum=(0.299*R+0.587*G+0.114*B)/255;html+=`<div class="cell ${lum<0.55?"dk":""}" style="background:rgb(${R},${G},${B})" title="${r} · ${c}: ${fmt(v)}">${fmt(v)}</div>`;});});
+  const el=$(id); el.style.gridTemplateColumns=`auto repeat(${cols.length},1fr)`; el.innerHTML=html;
+}
+
+/* effort vs value bubbles */
+function bubble(id,o){
+  const {items,xMax=5,yMax,yLabel,fmt}=o;
+  const W=640,H=310,pl=54,pr=20,pt=24,pb=58;
+  const my=yMax||niceMax(Math.max(...items.map(i=>i.value||0))*1.15);
+  const x=v=>pl+v/xMax*(W-pl-pr), y=v=>pt+(1-v/my)*(H-pt-pb); let out="";
+  ticks(my).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  [1,2,3,4].forEach(t=>out+=`<text x="${x(t)}" y="${H-pb+20}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${t}</text>`);
+  out+=`<text x="${W-pr}" y="${H-6}" font-size="10.5" fill="${C.mut}" text-anchor="end">implementation effort →</text><text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  // "do now" corner
+  out+=`<rect x="${x(0)}" y="${y(my)}" width="${x(2)-x(0)}" height="${y(my*0.4)-y(my)}" fill="rgba(14,138,109,.06)"/><text x="${x(0.1)}" y="${y(my)+14}" font-size="10.5" font-weight="700" fill="${C.teal}">DO NOW · low effort, high value</text>`;
+  items.forEach(it=>{
+    const on=it.on!==false, r=10+it.conf/100*14, cx=x(it.effort), cy=y(it.value||my*0.035);
+    const fill=it.value?(on?C.blue:"#c9d6ea"):"#fff", stroke=it.value?(on?C.navy:"#c9d6ea"):C.mut;
+    out+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" fill-opacity="${it.value?.85:1}" stroke="${stroke}" stroke-width="1.5" ${it.value?"":'stroke-dasharray="3 3"'}><title>${it.k} ${it.name}: ${it.value?fmt(it.value):"risk / enabler"} · confidence ${it.conf}%</title></circle>`;
+    out+=`<text x="${cx}" y="${cy+4}" font-size="10.5" font-weight="800" fill="${it.value&&on?"#fff":C.navy}" text-anchor="middle">${it.k}</text>`;
+    let tx=cx+r+6, ty=cy+4, anchor="start";
+    if(it.labelPos==="above"){tx=cx;ty=cy-r-6;anchor="middle";}
+    else if(it.labelPos==="left"||tx>W-150){tx=cx-r-6;anchor="end";}
+    out+=`<text x="${tx}" y="${ty}" font-size="10.5" fill="${on?C.ink:C.mut}" text-anchor="${anchor}">${it.short}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* waterfall */
+function waterfall(id,o){
+  const {steps,totalLabel,fmt,unit=""}=o;
+  const W=640,H=275,pl=50,pr=14,pt=28,pb=58;
+  const tot=sum(steps.map(s=>s.v)), yMax=niceMax(tot*1.12)||1, y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const all=[...steps,{l:totalLabel,v:tot,total:true}], n=all.length, bw=(W-pl-pr)/n, barW=bw*0.6; let run=0,out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  out+=`<text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${unit}</text>`;
+  all.forEach((s,i)=>{
+    const x=pl+i*bw+(bw-barW)/2; let top,bot;
+    if(s.total){top=y(s.v);bot=y(0);} else {top=y(run+s.v);bot=y(run);run+=s.v;}
+    out+=`<rect x="${x}" y="${top}" width="${barW}" height="${Math.max(1.5,bot-top)}" rx="3" fill="${s.total?C.navy:(s.color||C.blue)}" ${s.soft?'fill-opacity=".55"':""}><title>${s.l}: ${fmt(s.v)}</title></rect>`;
+    out+=`<text x="${x+barW/2}" y="${top-6}" font-size="11" font-weight="700" fill="${s.total?C.navy:(s.color||C.blue)}" text-anchor="middle">${s.total?fmt(s.v):"+"+fmt(s.v)}</text>`;
+    if(!s.total&&i<n-1){const nx=pl+(i+1)*bw+(bw-barW)/2;out+=`<line x1="${x+barW}" x2="${nx}" y1="${y(run)}" y2="${y(run)}" stroke="#b9c7dc" stroke-dasharray="3 3"/>`;}
+    const w=s.l.split(" "), half=Math.ceil(w.length/2);
+    out+=`<text x="${x+barW/2}" y="${H-pb+18}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(0,half).join(" ")}</text><text x="${x+barW/2}" y="${H-pb+31}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(half).join(" ")}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* move cards with toggles -> callback */
+function renderMoves(id,moves,onChange){
+  $(id).innerHTML=moves.map(m=>`
+    <div class="move ${m.on?"on":""} ${m.value?"":"na"}" data-k="${m.k}" ${m.value?'role="button" tabindex="0" aria-pressed="'+m.on+'"':""}>
+      <div class="top"><span class="code">MOVE ${m.k}</span>${m.value?'<span class="tick" aria-hidden="true">'+(m.on?"✓":"")+'</span>':'<span class="code" style="color:var(--soft)">'+m.tag+'</span>'}</div>
+      <h3>${m.name}</h3>
+      <div class="val">${m.value?`<span class="v">+${m.fmt(m.value)} / yr</span>`:`<span class="r">${m.tag}</span>`}<span>Effort: ${m.effortLabel}</span>${m.extra?`<span>${m.extra}</span>`:""}<span>Confidence ${m.conf}%</span></div>
+      <p>${m.why}</p>
+      <div class="how"><b>How:</b> ${m.how}</div>
+    </div>`).join("");
+  const el=$(id);
+  const toggle=card=>{const m=moves.find(x=>x.k===card.dataset.k); if(!m.value) return; m.on=!m.on; onChange();};
+  el.addEventListener("click",e=>{const c=e.target.closest(".move"); if(c) toggle(c);});
+  el.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const c=e.target.closest(".move"); if(c){e.preventDefault();toggle(c);}});
+}
+
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const cr=v=>"₹"+(Math.round(v*10)/10).toString().replace(/\.0$/,"")+" cr";
+
+const MOVES=[
+  {k:"B1",short:"Value-weighted fraud queues",name:"Re-weight fraud analyst queues by expected loss, not alert age",value:18,bridge:[["Fraud loss avoided",18,"red"]],effort:1.2,effortLabel:"low, process change",conf:80,on:true,extra:"Value in weeks",fmt:cr,
+   why:"Same analysts, same alerts, different order: score each alert by typology conversion rate × exposure value. The mule and social-engineering queue, at 30% conversion, gets worked first instead of drowning behind 88k velocity alerts at 11%.",
+   how:"A scoring rule on the existing case-management system; A/B the queue order for one month and measure confirmed-fraud value caught per analyst-hour."},
+  {k:"B2",short:"RTGS exception desk",labelPos:"above",name:"Stand up a dedicated RTGS exception desk with a same-day SLA",value:11,bridge:[["RTGS value-at-risk",11,"blue"]],effort:1.5,effortLabel:"low",conf:75,on:true,extra:"Two-person desk",fmt:cr,
+   why:"2,150 items a month, ₹41 lakh average value at risk each, 2.8-day resolution. A two-person desk with direct counterparty escalation takes resolution under one day and cuts funding-cost drag and penalty exposure.",
+   how:"Route RT9 out of the general queue; add a value-at-risk dashboard so the desk works largest-first."},
+  {k:"B3",short:"Auto-repair 5 → 15 codes",name:"Extend auto-repair from 5 to 15 failure codes",value:9,bridge:[["Ops cost-out",9,"teal"]],effort:2.8,effortLabel:"medium",conf:70,on:true,extra:"Target 0.22% exceptions",fmt:cr,
+   why:"The June rollout proved the pattern: exceptions fell from 0.58% to 0.31% while volume grew 22%. Codes R03 and C57 are next: the rules exist, they just run through humans today.",
+   how:"Codify the top manual-repair playbooks as rules; keep a human sign-off on any repair above a value threshold."},
+  {k:"B4",short:"Smart UPI retry",name:"Smart retry orchestration on UPI timeouts",value:20,bridge:[["Fee income recovered",14,"blue"],["Churn retention",6,"teal"]],effort:4.2,effortLabel:"high, build",conf:55,on:true,extra:"₹14 cr fees + ₹6 cr retention",fmt:cr,
+   why:"U30 timeouts run at 241k a month and cluster in the 18–24h window. Intelligent retry, timed to beneficiary-bank recovery, capped and idempotent, converts an estimated 63% of first-attempt failures into completed payments.",
+   how:"Build on the switch, not the app; measure completed-payment rate and complaint volume, not retry count."},
+  {k:"B5",short:"NEFT batch smoothing",name:"Smooth NEFT batch load out of the 09–15h window",value:0,tag:"Enabler",effort:1.8,effortLabel:"low",conf:85,on:true,fmt:cr,
+   why:"NEFT exceptions concentrate in mid-day batch congestion. Re-scheduling internal and corporate-initiated batches into off-peak windows cuts mismatch retries and reduces the RT9 spill-over near RTGS cut-off; its value shows up inside Moves 2 and 3.",
+   how:"Stagger corporate file submission slots; verify on the same heatmap next quarter; the hotspot should visibly fade."}
+];
+const COL={red:C.red,blue:C.blue,teal:C.teal};
+
+function renderKpis(){
+  const on=MOVES.filter(m=>m.on&&m.value); const total=sum(on.map(m=>m.value));
+  $("kpis").innerHTML=`
+    <div class="kpi"><div class="l">Payment transactions per day</div><div class="v">28.4 M</div><div class="d good">+22% year on year</div></div>
+    <div class="kpi"><div class="l">Exception rate</div><div class="v">0.31%</div><div class="d good">down from 0.58% in April</div></div>
+    <div class="kpi"><div class="l">Same-day reconciliation closure</div><div class="v">96.8%</div><div class="d good">from 89.2% baseline</div></div>
+    <div class="kpi"><div class="l">Modelled annual value</div><div class="v">${cr(total)}</div><div class="d">${on.length} of 4 valued moves selected</div></div>`;
+}
+function renderValue(){
+  const on=MOVES.filter(m=>m.on&&m.value);
+  const total=sum(on.map(m=>m.value)), weighted=sum(on.map(m=>m.value*m.conf/100));
+  const costOut=on.filter(m=>m.k==="B3").reduce((a,m)=>a+m.value,0);
+  const revenueSide=total-costOut;
+  $("vsum").innerHTML=`
+    <div class="kpi"><div class="l">Modelled value, selected</div><div class="v">${cr(total)}</div><div class="d">annual, run-rate</div></div>
+    <div class="kpi"><div class="l">Risk-weighted value</div><div class="v">${cr(weighted)}</div><div class="d">value × confidence</div></div>
+    <div class="kpi"><div class="l">Revenue-side share</div><div class="v">${total?Math.round(revenueSide/total*100):0}%</div><div class="d">fraud avoided, fees, retention</div></div>
+    <div class="kpi"><div class="l">Fastest value</div><div class="v">${cr(on.filter(m=>m.effort<2).reduce((a,m)=>a+m.value,0))}</div><div class="d">from process changes alone</div></div>`;
+  bubble("c-prio",{items:MOVES,yMax:24,yLabel:"modelled value, ₹ cr / yr",fmt:v=>"₹"+v});
+  const steps=[]; on.forEach(m=>m.bridge.forEach(([l,v,c])=>steps.push({l,v,color:COL[c]})));
+  waterfall("c-bridge",{steps,totalLabel:"Total modelled value",fmt:v=>"₹"+Math.round(v),unit:"₹ crore / yr"});
+  $("bridge-insight").innerHTML=`<b>Insight.</b> ${total?Math.round(costOut/total*100):0}% of the value is cost-out. The rest is revenue-side: recovered fee income, fraud loss avoided, customers retained. <span class="arrow">→</span> Pitch the programme to the business line, not only to operations.`;
+  renderKpis();
+  document.querySelectorAll(".move").forEach(c=>{const m=MOVES.find(x=>x.k===c.dataset.k);c.classList.toggle("on",m.on);if(m.value){c.setAttribute("aria-pressed",m.on);c.querySelector(".tick").textContent=m.on?"✓":"";}});
+}
+
+/* 1 · read the operation */
+combo("c-volume",{labels:MONTHS,bars:[690,672,715,708,742,768,781,795,842,912,958,876],line:[0.55,0.56,0.57,0.58,0.54,0.49,0.44,0.41,0.38,0.36,0.33,0.31],yLabel:"millions",y1Label:"exception %",y1Max:0.7,barFmt:v=>v+"M",lineFmt:v=>v+"%"});
+hbars("c-mix",{labels:["UPI","Debit / credit cards","IMPS","NEFT","RTGS"],series:[{name:"Share of count",data:[71,14,9,5.7,0.3],color:C.blue},{name:"Share of value",data:[22,6,9,22,41],color:C.gold}],xMax:80,fmt:v=>v+"%",rowH:38,labelW:140});
+const alerts=[38,29,54,88,21],conf=[11.4,6.4,8.6,9.7,2.3];
+hbars("c-fraud",{labels:["Social eng. / mule","Account takeover","Card-not-present","Velocity rules","Merchant anomaly"],series:[{name:"Alerts",data:alerts,color:C.lblue},{name:"Confirmed fraud",data:conf,color:C.red}],fmt:v=>v+"k",annot:alerts.map((a,i)=>Math.round(conf[i]/a*100)+"% convert"),rowH:38,labelW:140});
+heat("hm-bank",["UPI","Cards","IMPS","NEFT","RTGS"],["00–03","03–06","06–09","09–12","12–15","15–18","18–21","21–24"],[[0.21,0.18,0.24,0.30,0.33,0.38,0.62,0.58],[0.14,0.11,0.16,0.22,0.25,0.27,0.31,0.24],[0.19,0.15,0.21,0.28,0.30,0.33,0.41,0.36],[0.08,0.06,0.26,0.71,0.66,0.44,0.18,0.09],[0.02,0.02,0.08,0.31,0.39,0.83,0.06,0.02]],v=>v.toFixed(2));
+hbars("c-funnel",{labels:["Failed on first attempt","Recovered by auto-retry/reversal","Resolved by assisted repair","Unresolved at end of day","Customers in churn-risk band"],series:[{name:"per day",data:[88,61,18,9,2.4],colors:[C.navy,C.blue,C.lblue,C.gold,C.red]}],fmt:v=>v+"k",rowH:36,labelW:232});
+
+/* 2 + 3 */
+renderMoves("moves",MOVES,renderValue);
+renderValue();
+
+</script>
+<script>if(new URLSearchParams(location.search).get("embed")==="1"||/^aq-embed/.test(window.name)){document.documentElement.classList.add("aq-embed");}</script>
+</body>
+</html>

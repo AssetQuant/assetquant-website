@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conversational automation for service operations | AssetQuant</title>
+<meta name="description" content="Interactive demonstration: a service assistant for a retail bank and a technology company, with the flow rail, systems, policy checks, cases and human handoffs visible behind the chat.">
+<style>
+:root{
+  --navy:#0d2a5e; --blue:#2563eb; --lblue:#9dbdf0; --ink:#33415c; --soft:#64748b;
+  --mist:#f3f7fd; --line:#e2e9f4; --white:#fff;
+  --teal:#0e8a6d; --tealbg:#e5f4ef; --red:#b3402a; --redbg:#faece8; --amber:#b45309; --amberbg:#fdf4e0; --gold:#e7b12e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--white);line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:800;font-size:18px;color:var(--navy)}
+.brand span{color:var(--blue)}
+.back{font-size:13.5px;font-weight:500;color:var(--blue)}
+.back:hover{text-decoration:underline}
+.head{padding:44px 0 18px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.kicker{display:block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1{font-size:clamp(26px,3.6vw,38px);color:var(--navy);letter-spacing:-.02em;font-weight:800;line-height:1.1}
+h1 em{font-style:normal;color:var(--blue)}
+.sub{margin-top:8px;color:var(--soft);font-size:15px;max-width:68ch}
+.pill{font-size:12px;font-weight:600;color:#7a5a12;background:var(--amberbg);border:1px solid #f3e0b3;border-radius:999px;padding:6px 12px;white-space:nowrap}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:10px 0 14px}
+.kpi{background:var(--mist);border-radius:12px;padding:15px 16px}
+.kpi .l{font-size:12px;color:var(--soft);font-weight:500}
+.kpi .v{font-size:25px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:11.5px;font-weight:600;margin-top:2px;color:var(--soft)}
+.good{color:var(--teal)!important} .bad{color:var(--red)!important} .warn{color:var(--amber)!important}
+.headline{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 18px;font-size:14px;color:var(--ink);line-height:1.6}
+.headline b{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px}
+.steps span{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);display:inline-flex;align-items:center;gap:8px}
+.steps span b{width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:10.5px;display:inline-flex;align-items:center;justify-content:center}
+.steps span:not(:last-child):after{content:"→";color:#b9c7dc;margin-left:6px}
+
+.section{margin-top:30px}
+.sec-h{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sec-h h2{font-size:19px;color:var(--navy);font-weight:800;letter-spacing:-.01em}
+.sec-h h2 small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:3px}
+.sec-h .hint{font-size:12.5px;color:var(--soft)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid2 .span2{grid-column:1/-1}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--white);display:flex;flex-direction:column}
+.panel-in{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.panel h3{font-size:15px;color:var(--navy);font-weight:700;line-height:1.3}
+.panel .hint{font-size:12px;color:var(--soft);margin-top:-6px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--soft);font-weight:600}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.sw.ln{width:16px;height:3px;border-radius:2px}
+.sw.navy{background:var(--navy)} .sw.blue{background:var(--blue)} .sw.lblue{background:var(--lblue)} .sw.gold{background:var(--gold)} .sw.red{background:var(--red)}
+.scroll-x{overflow-x:auto}
+.guard .how-inline{display:inline;font-size:13px}
+svg text{font-family:inherit}
+.chart{width:100%;height:auto;display:block}
+.insight{margin-top:auto;border-left:3px solid var(--gold);background:#fffaf0;border-radius:0 10px 10px 0;padding:11px 13px;font-size:12.5px;color:#5c4a1e;line-height:1.55}
+.insight b{color:#3b2f10}
+.insight .arrow{color:var(--blue);font-weight:700}
+
+.heat{display:grid;gap:4px;font-size:11px}
+.heat .hc{font-weight:700;color:var(--soft);text-align:center;font-size:10.5px;padding-bottom:2px}
+.heat .hl{font-weight:700;color:var(--navy);padding-right:8px;white-space:nowrap;display:flex;align-items:center;font-size:11.5px}
+.heat .cell{border-radius:5px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.heat .cell.dk{color:#fff}
+.heat-leg{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soft);margin-top:4px}
+.heat-leg i{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#eef4fd,#9dbdf0,#2563eb,#0d2a5e)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft);font-weight:700;text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th:first-child,thead th.l{text-align:left}
+tbody td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody td:first-child,tbody td.l{text-align:left}
+tbody td:first-child{font-weight:800;color:var(--navy)}
+tbody tr:last-child td{border-bottom:none}
+.chip{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px}
+.chip.auto{background:var(--tealbg);color:var(--teal)} .chip.assist{background:#dce8fb;color:#1d4fbd} .chip.manual{background:var(--redbg);color:var(--red)}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+@media(max-width:900px){.duo{grid-template-columns:1fr}}
+.vsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px}
+.vsum .kpi{padding:12px 14px}
+.vsum .kpi .v{font-size:21px}
+
+.moves{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.move{border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;background:var(--white);position:relative;cursor:pointer;transition:.2s;display:flex;flex-direction:column;gap:8px}
+.move:hover{border-color:#b9cdf0}
+.move.on{border-color:var(--blue);box-shadow:0 10px 24px rgba(37,99,235,.10)}
+.move.na{cursor:default}
+.move .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.move .code{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--blue)}
+.move .tick{width:20px;height:20px;border-radius:6px;border:1.5px solid #c9d6ea;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:#fff;flex:none}
+.move.on .tick{background:var(--blue);border-color:var(--blue)}
+.move h3{font-size:15px;color:var(--navy);line-height:1.3}
+.move .val{display:flex;flex-wrap:wrap;gap:6px}
+.move .val span{font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--mist);color:var(--navy)}
+.move .val span.v{background:var(--tealbg);color:var(--teal)}
+.move .val span.r{background:var(--amberbg);color:var(--amber)}
+.move p{font-size:12.5px;color:var(--soft);line-height:1.55}
+.move .how{font-size:12px;color:var(--ink);border-top:1px solid var(--line);padding-top:8px;margin-top:auto}
+.move .how b{color:var(--navy)}
+.guard{border:1px solid var(--line);border-left:3px solid var(--navy);border-radius:12px;padding:15px 18px;background:var(--mist);margin-top:14px;font-size:13px;color:var(--ink)}
+.guard b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.guard small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:4px}
+.foot{border-top:1px solid var(--line);margin-top:40px;padding:20px 0 38px;font-size:12.5px;color:var(--soft)}
+.move:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.industry{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 14px}
+.industry .lbl{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);margin-right:4px}
+.industry button{font:inherit;font-size:13px;font-weight:700;color:var(--navy);background:var(--white);border:1px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer}
+.industry button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.industry .hint{font-size:12.5px;color:var(--soft);margin-left:6px}
+.workbench{display:grid;grid-template-columns:400px 1fr;gap:18px;align-items:start;margin-top:4px}
+@media(max-width:1000px){.workbench{grid-template-columns:1fr}}
+
+/* chat */
+.chat{display:flex;flex-direction:column;height:720px;position:sticky;top:16px}
+.chat-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--mist)}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none}
+.chat-h b{display:block;font-size:14px;color:var(--navy)}
+.chat-h small{font-size:11px;color:var(--teal);font-weight:600}
+.chat-h .btn-ghost{margin-left:auto}
+.btn-ghost{font:inherit;font-size:12px;font-weight:700;color:var(--navy);background:var(--white);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
+.msgs{flex:1;overflow:auto;padding:16px 16px 6px;display:flex;flex-direction:column;gap:10px;background:#fbfcfe}
+.msg{max-width:88%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap}
+.msg.bot{background:var(--white);border:1px solid var(--line);border-top-left-radius:4px;align-self:flex-start;color:var(--ink)}
+.msg.user{background:var(--blue);color:#fff;border-top-right-radius:4px;align-self:flex-end}
+.msg.sys{align-self:center;background:transparent;color:var(--soft);font-size:11.5px;padding:2px 8px}
+.msg .card{margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--mist);font-size:12.5px}
+.msg .card b{color:var(--navy)}
+.msg .card .row{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.msg .intent{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6836b3;background:#efe6fb;border-radius:999px;padding:2px 8px;margin-top:6px}
+.typing{align-self:flex-start;display:inline-flex;gap:4px;padding:10px 13px;background:var(--white);border:1px solid var(--line);border-radius:14px;border-top-left-radius:4px}
+.typing i{width:6px;height:6px;border-radius:50%;background:#9db8e8;animation:tb 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes tb{50%{opacity:.3;transform:translateY(-2px)}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;border-top:1px solid var(--line);min-height:52px;background:var(--white)}
+.chips button{font:inherit;font-size:12.5px;font-weight:700;color:var(--blue);background:var(--white);border:1px solid var(--blue);border-radius:999px;padding:7px 12px;cursor:pointer}
+.chips button:hover{background:#eaf1fe}
+.chips button.alt{color:var(--navy);border-color:var(--line)}
+.composer{display:flex;gap:8px;padding:10px 16px 12px;border-top:1px solid var(--line)}
+.composer input{flex:1;font:inherit;font-size:13.5px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
+.composer input:focus{outline:2px solid var(--blue);border-color:var(--blue)}
+.composer button{font:inherit;font-size:13px;font-weight:800;color:#fff;background:var(--navy);border:0;border-radius:10px;padding:0 16px;cursor:pointer}
+.chat-note{font-size:11px;color:var(--soft);padding:0 16px 12px;line-height:1.5}
+.chat-note em{font-style:normal;font-weight:800;color:var(--navy)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* behind */
+.behind{display:grid;gap:14px}
+.bh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.grid2.tight{gap:14px}
+.rail{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px;margin-top:6px}
+.rail li{border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:11.5px;color:var(--soft);position:relative;min-height:70px}
+.rail li b{display:block;font-size:12px;color:var(--navy);margin-bottom:3px}
+.rail li i{position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:50%;background:#dbe4f0}
+.rail li.now{border-color:var(--blue);background:#eaf1fe} .rail li.now i{background:var(--blue);animation:tb 1s infinite}
+.rail li.done{border-color:#bfe3d6;background:#f3fbf7} .rail li.done i{background:var(--teal)}
+.rail li.skip{opacity:.55} .rail li.skip i{background:#c9d6ea}
+.rail li.hand{border-color:var(--gold);background:#fff8e6} .rail li.hand i{background:var(--gold)}
+.rail li span{display:block;font-size:11px;line-height:1.4;color:var(--ink)}
+.sys,.guards{list-style:none;display:grid;gap:6px;font-size:12.5px}
+.sys li{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:var(--mist);border-radius:8px;color:var(--ink)}
+.sys li b{color:var(--navy)} .sys li small{color:var(--soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sys li.err b{color:var(--amber)}
+.guards li{padding:7px 10px;border-left:3px solid var(--navy);background:var(--mist);border-radius:0 8px 8px 0;color:var(--ink);line-height:1.45}
+.guards li.hit{border-left-color:var(--gold);background:#fff8e6}
+.guards li.hit:after{content:" · applied";font-weight:800;color:var(--amber)}
+.muted{color:var(--soft);font-size:12.5px}
+.cases{display:grid;gap:8px}
+.case{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:12.5px;background:var(--white)}
+.case b{color:var(--navy);font-size:13px}
+.case .id{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--soft)}
+.case .meta{grid-column:1/-1;color:var(--soft);font-size:11.5px}
+.case .st{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 8px;white-space:nowrap;align-self:start}
+.st.open{background:#dce8fb;color:#1d4fbd} .st.human{background:var(--amberbg);color:var(--amber)} .st.closed{background:var(--tealbg);color:var(--teal)} .st.sev{background:var(--redbg);color:var(--red)}
+.brief{margin-top:12px;border:1px solid #f3e0b3;background:#fffaf0;border-radius:10px;padding:12px 14px;font-size:12.5px}
+.brief h4{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:800;margin-bottom:6px}
+.brief dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px}
+.brief dt{color:var(--soft);font-weight:600;white-space:nowrap} .brief dd{color:var(--navy);font-weight:600}
+.audit{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.65;color:var(--ink);max-height:230px;overflow:auto;background:var(--mist);border-radius:10px;padding:10px 12px}
+.audit div span{color:var(--soft);margin-right:8px}
+.audit div.ok{color:var(--teal)} .audit div.pol{color:#6836b3} .audit div.hand{color:var(--amber);font-weight:700}
+.kpi .band{margin-top:6px;height:7px;border-radius:4px;background:#e6edf7;position:relative;overflow:hidden}
+.kpi .band i{position:absolute;top:0;bottom:0;background:rgba(14,138,109,.22)}
+.kpi .band b{position:absolute;top:-2px;width:3px;height:11px;background:var(--navy);border-radius:2px}
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:22px}
+.find{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 16px}
+.find b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.find p{font-size:12.5px;color:var(--soft);line-height:1.5}
+@media(prefers-reduced-motion:reduce){.typing i,.rail li.now i{animation:none}}
+
+</style>
+
+<style>.aq-demo-disclosure{max-width:1140px;margin:16px auto 0;padding:11px 16px;border:1px solid #c9daf0;background:#f3f8ff;color:#405b80;border-radius:8px;font:12px/1.5 Arial,sans-serif;display:flex;gap:10px;align-items:flex-start}.aq-demo-disclosure strong{color:#071b54;white-space:nowrap}.aq-demo-disclosure span{flex:1}@media(max-width:700px){.aq-demo-disclosure{margin:12px 14px 0;display:block}.aq-demo-disclosure strong{display:block;margin-bottom:3px;white-space:normal}}</style>
+
+<style>
+/* V58.1 — canonical AssetQuant lockup on internal demo pages */
+.brand-lockup{display:inline-flex!important;align-items:center!important;gap:8px!important;color:#0d2a5e!important;font-weight:800!important;text-decoration:none!important}
+.brand-lockup img{display:block;width:54px;height:34px;object-fit:contain;flex:none}
+.brand-lockup .brand-wordmark{color:#0d2a5e!important;font-size:18px;line-height:1;letter-spacing:-.025em}
+@media(max-width:640px){.brand-lockup{gap:6px!important}.brand-lockup img{width:46px;height:30px}.brand-lockup .brand-wordmark{font-size:16px}}
+</style>
+<style>html.aq-embed .aq-demo-disclosure,html.aq-embed .topbar{display:none!important}html.aq-embed .head{padding-top:26px}</style>
+</head>
+<body>
+<div class="aq-demo-disclosure" role="note"><strong>Illustrative demonstration · Synthetic data</strong><span>Organisations, transactions, documents, figures and outcomes shown here are fictional or modelled for demonstration purposes. No client, bank or confidential data is used. Results are illustrative, not actual client outcomes or professional advice.</span></div>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand brand-lockup" href="../index.html#capabilities" aria-label="AssetQuant home"><img src="../assets/logo-approved-aq.png" alt="AQ"><span class="brand-wordmark">AssetQuant</span></a>
+  <a class="back" href="../index.html#capabilities">← Back to AssetQuant</a>
+</div></div>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <span class="kicker">AI &amp; intelligent automation · Interactive demo</span>
+      <h1>The customer sees a conversation. <em>You see the machine behind it.</em></h1>
+      <p class="sub">A service assistant for a retail bank and for a technology company. Chat on the left as a customer would; on the right, watch what actually happens: identity verified, policies evaluated, systems called, cases raised, and the exact moment it hands to a person with a full brief. Nothing moves money, grants access or closes a case without the rules being met.</p>
+    </div>
+  </header>
+
+  <div class="industry" role="group" aria-label="Industry">
+    <span class="lbl">Show it for</span>
+    <button type="button" data-i="bank" class="on">Retail bank</button>
+    <button type="button" data-i="tech">Technology company</button>
+    <span class="hint" id="ind-hint"></span>
+  </div>
+
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+
+  <div class="workbench">
+    <section class="chat panel" aria-label="Customer chat">
+      <div class="chat-h">
+        <div class="avatar" id="bot-avatar">A</div>
+        <div><b id="bot-name">Assistant</b><small id="bot-status">Online · replies in seconds</small></div>
+        <button class="btn-ghost sm" id="restart" type="button">Start over</button>
+      </div>
+      <div class="msgs" id="msgs"></div>
+      <div class="chips" id="chips"></div>
+      <form class="composer" id="composer" autocomplete="off"><label for="inp" class="sr">Type a message</label><input id="inp" type="text" placeholder="Type a message, or tap a suggestion" maxlength="200"><button type="submit">Send</button></form>
+      <p class="chat-note">Type freely or tap a suggestion. Type <em>agent</em> at any time to reach a person.</p>
+    </section>
+
+    <section class="behind" aria-label="Behind the chat">
+      <div class="panel"><div class="panel-in">
+        <div class="bh"><h3>Behind the chat</h3><span class="hint" id="flow-name">No conversation yet</span></div>
+        <ol class="rail" id="rail"></ol>
+      </div></div>
+      <div class="grid2 tight">
+        <div class="panel"><div class="panel-in">
+          <h3>Systems called</h3><p class="hint">Integration calls and response times</p>
+          <ul class="sys" id="sys"><li class="muted">Nothing yet.</li></ul>
+        </div></div>
+        <div class="panel"><div class="panel-in">
+          <h3>Guardrails in force</h3><p class="hint">The rules the assistant cannot cross</p>
+          <ul class="guards" id="guards"></ul>
+        </div></div>
+      </div>
+      <div class="panel"><div class="panel-in">
+        <div class="bh"><h3 id="cases-title">Cases raised</h3><span class="hint">Created by the assistant this session</span></div>
+        <div class="cases" id="cases"><p class="muted">None yet.</p></div>
+        <div class="brief" id="brief" hidden></div>
+      </div></div>
+      <div class="panel"><div class="panel-in">
+        <h3>Audit trail</h3><p class="hint">Every check, decision and action, as it happens</p>
+        <div class="audit" id="audit"><div class="muted">Nothing yet.</div></div>
+      </div></div>
+    </section>
+  </div>
+
+  <section class="findings">
+    <div class="find"><b>Containment with a floor, not a ceiling</b><p>In this illustrative scenario, the assistant is modelled to resolve 60–70% of routine requests and route the rest early. A customer can reach a person in one word at any point; containment is never achieved by trapping someone.</p></div>
+    <div class="find"><b>Verify before you disclose or act</b><p>Protective actions (freezing a card, revoking a session) can happen first; anything that discloses data or moves value waits for verification. The order is a rule, not a habit.</p></div>
+    <div class="find"><b>Handoffs arrive with context</b><p>When a person takes over they receive what was verified, what was tried, which systems were checked and a recommended next step, so the conversation does not start again.</p></div>
+  </section>
+</div>
+
+
+<script>
+/* ---------- house palette + helpers ---------- */
+const C={navy:"#0d2a5e",blue:"#2563eb",lblue:"#9dbdf0",teal:"#0e8a6d",red:"#b3402a",amber:"#b45309",gold:"#e7b12e",grid:"#eef2f9",mut:"#64748b",ink:"#33415c",pale:"#c8d9f5"};
+const $=id=>document.getElementById(id);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v||1)));const n=v/p;const steps=[1,1.2,1.5,2,2.5,3,4,5,6,8,10];const m=steps.find(x=>n<=x);return m*p;}
+function ticks(max,n=4){const out=[];for(let i=0;i<=n;i++)out.push(max*i/n);return out;}
+const fmtK=v=>v>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":String(Math.round(v));
+
+/* bars (left axis) + optional line (right axis) */
+function combo(id,o){
+  const {labels,bars,line,barColor=C.navy,barColors,lineColor=C.blue,yLabel="",y1Label="",y1Max,y1Min=0,everyLabel=1,barFmt=v=>v,lineFmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=line?46:14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...bars)*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,bw=(W-pl-pr)/n,barW=bw*0.6; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  bars.forEach((v,i)=>{const x=pl+i*bw+(bw-barW)/2; out+=`<rect x="${x}" y="${y(v)}" width="${barW}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${barColors?barColors[i]:barColor}"><title>${labels[i]}: ${barFmt(v)}</title></rect>`;});
+  labels.forEach((l,i)=>{ if(i%everyLabel===0) out+=`<text x="${pl+i*bw+bw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;});
+  if(line){
+    const lMax=y1Max||niceMax(Math.max(...line)*1.1), lMin=y1Min, y1=v=>pt+(1-(v-lMin)/(lMax-lMin))*(H-pt-pb);
+    ticks(lMax).forEach(t=>out+=`<text x="${W-pr+7}" y="${y1(t)+4}" font-size="10.5" fill="${C.mut}">${+t.toFixed(2)}</text>`);
+    if(y1Label) out+=`<text x="${W-2}" y="${pt-5}" font-size="10" fill="${C.mut}" text-anchor="end">${y1Label}</text>`;
+    const pts=line.map((v,i)=>`${pl+i*bw+bw/2},${y1(v)}`).join(" ");
+    out+=`<polyline fill="none" stroke="${lineColor}" stroke-width="2.4" stroke-linejoin="round" points="${pts}"/>`;
+    line.forEach((v,i)=>out+=`<circle cx="${pl+i*bw+bw/2}" cy="${y1(v)}" r="3.2" fill="#fff" stroke="${lineColor}" stroke-width="2"><title>${labels[i]}: ${lineFmt(v)}</title></circle>`);
+  }
+  $(id).innerHTML=out;
+}
+
+/* vertical grouped bars */
+function grouped(id,o){
+  const {labels,series,yLabel="",fmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...series.flatMap(s=>s.data))*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,gw=(W-pl-pr)/n,inner=gw*0.68,bw=inner/series.length; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  labels.forEach((l,i)=>{
+    series.forEach((s,k)=>{const v=s.data[i], x=pl+i*gw+(gw-inner)/2+k*bw; out+=`<rect x="${x+1}" y="${y(v)}" width="${bw-2}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${s.color}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x+bw/2}" y="${y(v)-5}" font-size="10" font-weight="700" fill="${s.color}" text-anchor="middle">${fmt(v)}</text>`;});
+    out+=`<text x="${pl+i*gw+gw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* horizontal bars, single or grouped; optional per-row annotation */
+function hbars(id,o){
+  const {labels,series,xMax,fmt=v=>v,annot,rowH=34,labelW=150}=o;
+  const W=640,pl=labelW,pr=annot?112:70,pt=8;
+  const H=pt+labels.length*rowH+12;
+  const mx=xMax||niceMax(Math.max(...series.flatMap(s=>s.data))*1.1), x=v=>pl+v/mx*(W-pl-pr);
+  const bh=(rowH-8)/series.length; let out="";
+  ticks(mx).forEach(t=>out+=`<line x1="${x(t)}" x2="${x(t)}" y1="${pt}" y2="${H-10}" stroke="${C.grid}"/>`);
+  labels.forEach((l,i)=>{
+    const y0=pt+i*rowH+4;
+    out+=`<text x="${pl-10}" y="${y0+(rowH-8)/2+4}" font-size="11.5" font-weight="700" fill="${C.navy}" text-anchor="end">${l}</text>`;
+    series.forEach((s,k)=>{const v=s.data[i],yy=y0+k*bh,col=s.colors?s.colors[i]:s.color; out+=`<rect x="${pl}" y="${yy}" width="${Math.max(1,x(v)-pl)}" height="${bh-2}" rx="3" fill="${col}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x(v)+5}" y="${yy+bh/2+3}" font-size="10.5" font-weight="700" fill="${col}">${fmt(v)}</text>`;});
+    if(annot) out+=`<text x="${W-2}" y="${y0+(rowH-8)/2+4}" font-size="10.5" font-weight="700" fill="${C.amber}" text-anchor="end">${annot[i]}</text>`;
+  });
+  const svg=$(id); svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML=out;
+}
+
+/* heatmap in house blue scale */
+function heat(id,rows,cols,data,fmt){
+  const flat=data.flat(),mn=Math.min(...flat),mx=Math.max(...flat);
+  const stops=[[238,244,253],[157,189,240],[37,99,235],[13,42,94]];
+  const col=v=>{const t=(v-mn)/((mx-mn)||1),s=Math.min(2.999,t*3),i=Math.floor(s),f=s-i;return [0,1,2].map(k=>Math.round(stops[i][k]+(stops[i+1][k]-stops[i][k])*f));};
+  let html=`<div></div>`+cols.map(c=>`<div class="hc">${c}</div>`).join("");
+  rows.forEach((r,ri)=>{html+=`<div class="hl">${r}</div>`;cols.forEach((c,ci)=>{const v=data[ri][ci],[R,G,B]=col(v),lum=(0.299*R+0.587*G+0.114*B)/255;html+=`<div class="cell ${lum<0.55?"dk":""}" style="background:rgb(${R},${G},${B})" title="${r} · ${c}: ${fmt(v)}">${fmt(v)}</div>`;});});
+  const el=$(id); el.style.gridTemplateColumns=`auto repeat(${cols.length},1fr)`; el.innerHTML=html;
+}
+
+/* effort vs value bubbles */
+function bubble(id,o){
+  const {items,xMax=5,yMax,yLabel,fmt}=o;
+  const W=640,H=310,pl=54,pr=20,pt=24,pb=58;
+  const my=yMax||niceMax(Math.max(...items.map(i=>i.value||0))*1.15);
+  const x=v=>pl+v/xMax*(W-pl-pr), y=v=>pt+(1-v/my)*(H-pt-pb); let out="";
+  ticks(my).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  [1,2,3,4].forEach(t=>out+=`<text x="${x(t)}" y="${H-pb+20}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${t}</text>`);
+  out+=`<text x="${W-pr}" y="${H-6}" font-size="10.5" fill="${C.mut}" text-anchor="end">implementation effort →</text><text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  // "do now" corner
+  out+=`<rect x="${x(0)}" y="${y(my)}" width="${x(2)-x(0)}" height="${y(my*0.4)-y(my)}" fill="rgba(14,138,109,.06)"/><text x="${x(0.1)}" y="${y(my)+14}" font-size="10.5" font-weight="700" fill="${C.teal}">DO NOW · low effort, high value</text>`;
+  items.forEach(it=>{
+    const on=it.on!==false, r=10+it.conf/100*14, cx=x(it.effort), cy=y(it.value||my*0.035);
+    const fill=it.value?(on?C.blue:"#c9d6ea"):"#fff", stroke=it.value?(on?C.navy:"#c9d6ea"):C.mut;
+    out+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" fill-opacity="${it.value?.85:1}" stroke="${stroke}" stroke-width="1.5" ${it.value?"":'stroke-dasharray="3 3"'}><title>${it.k} ${it.name}: ${it.value?fmt(it.value):"risk / enabler"} · confidence ${it.conf}%</title></circle>`;
+    out+=`<text x="${cx}" y="${cy+4}" font-size="10.5" font-weight="800" fill="${it.value&&on?"#fff":C.navy}" text-anchor="middle">${it.k}</text>`;
+    let tx=cx+r+6, ty=cy+4, anchor="start";
+    if(it.labelPos==="above"){tx=cx;ty=cy-r-6;anchor="middle";}
+    else if(it.labelPos==="left"||tx>W-150){tx=cx-r-6;anchor="end";}
+    out+=`<text x="${tx}" y="${ty}" font-size="10.5" fill="${on?C.ink:C.mut}" text-anchor="${anchor}">${it.short}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* waterfall */
+function waterfall(id,o){
+  const {steps,totalLabel,fmt,unit=""}=o;
+  const W=640,H=275,pl=50,pr=14,pt=28,pb=58;
+  const tot=sum(steps.map(s=>s.v)), yMax=niceMax(tot*1.12)||1, y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const all=[...steps,{l:totalLabel,v:tot,total:true}], n=all.length, bw=(W-pl-pr)/n, barW=bw*0.6; let run=0,out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  out+=`<text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${unit}</text>`;
+  all.forEach((s,i)=>{
+    const x=pl+i*bw+(bw-barW)/2; let top,bot;
+    if(s.total){top=y(s.v);bot=y(0);} else {top=y(run+s.v);bot=y(run);run+=s.v;}
+    out+=`<rect x="${x}" y="${top}" width="${barW}" height="${Math.max(1.5,bot-top)}" rx="3" fill="${s.total?C.navy:(s.color||C.blue)}" ${s.soft?'fill-opacity=".55"':""}><title>${s.l}: ${fmt(s.v)}</title></rect>`;
+    out+=`<text x="${x+barW/2}" y="${top-6}" font-size="11" font-weight="700" fill="${s.total?C.navy:(s.color||C.blue)}" text-anchor="middle">${s.total?fmt(s.v):"+"+fmt(s.v)}</text>`;
+    if(!s.total&&i<n-1){const nx=pl+(i+1)*bw+(bw-barW)/2;out+=`<line x1="${x+barW}" x2="${nx}" y1="${y(run)}" y2="${y(run)}" stroke="#b9c7dc" stroke-dasharray="3 3"/>`;}
+    const w=s.l.split(" "), half=Math.ceil(w.length/2);
+    out+=`<text x="${x+barW/2}" y="${H-pb+18}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(0,half).join(" ")}</text><text x="${x+barW/2}" y="${H-pb+31}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(half).join(" ")}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* move cards with toggles -> callback */
+function renderMoves(id,moves,onChange){
+  $(id).innerHTML=moves.map(m=>`
+    <div class="move ${m.on?"on":""} ${m.value?"":"na"}" data-k="${m.k}" ${m.value?'role="button" tabindex="0" aria-pressed="'+m.on+'"':""}>
+      <div class="top"><span class="code">MOVE ${m.k}</span>${m.value?'<span class="tick" aria-hidden="true">'+(m.on?"✓":"")+'</span>':'<span class="code" style="color:var(--soft)">'+m.tag+'</span>'}</div>
+      <h3>${m.name}</h3>
+      <div class="val">${m.value?`<span class="v">+${m.fmt(m.value)} / yr</span>`:`<span class="r">${m.tag}</span>`}<span>Effort: ${m.effortLabel}</span>${m.extra?`<span>${m.extra}</span>`:""}<span>Confidence ${m.conf}%</span></div>
+      <p>${m.why}</p>
+      <div class="how"><b>How:</b> ${m.how}</div>
+    </div>`).join("");
+  const el=$(id);
+  const toggle=card=>{const m=moves.find(x=>x.k===card.dataset.k); if(!m.value) return; m.on=!m.on; onChange();};
+  el.addEventListener("click",e=>{const c=e.target.closest(".move"); if(c) toggle(c);});
+  el.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const c=e.target.closest(".move"); if(c){e.preventDefault();toggle(c);}});
+}
+
+/* ===================== engine ===================== */
+const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+const wait=ms=>new Promise(r=>setTimeout(r,reduce?0:ms));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const now=()=>new Date().toTimeString().slice(0,8);
+let S;
+
+function fresh(ind){return {ind,verified:false,flow:null,pending:null,misses:0,busy:false,cases:[],caseSeq:0,metrics:{...IND[ind].seeds},rail:[],guardHits:new Set(),ended:false,outcome:null};}
+
+function userMsg(t){const m=document.createElement("div");m.className="msg user";m.textContent=t;$("msgs").appendChild(m);scrollBottom();}
+function sysMsg(t){const m=document.createElement("div");m.className="msg sys";m.textContent=t;$("msgs").appendChild(m);scrollBottom();}
+async function say(html,{card,intent,delay}={}){
+  const ty=document.createElement("div");ty.className="typing";ty.innerHTML="<i></i><i></i><i></i>";$("msgs").appendChild(ty);scrollBottom();
+  await wait(delay??Math.min(1100,350+html.length*6));
+  ty.remove();
+  const m=document.createElement("div");m.className="msg bot";
+  m.innerHTML=html+(card?`<div class="card">${card}</div>`:"")+(intent?`<span class="intent">Understood as: ${esc(intent)}</span>`:"");
+  $("msgs").appendChild(m);scrollBottom();
+}
+function scrollBottom(){const el=$("msgs");el.scrollTop=el.scrollHeight;}
+function ask(options,meta={}){
+  return new Promise((resolve,reject)=>{
+    S.pending={options,resolve,reject,menu:!!meta.menu};
+    $("chips").innerHTML=options.map((o,i)=>`<button type="button" data-i="${i}" class="${o.alt?"alt":""}">${esc(o.label)}</button>`).join("");
+  });
+}
+function answer(i){const p=S.pending;if(!p)return;const o=p.options[i];S.pending=null;$("chips").innerHTML="";userMsg(o.label);p.resolve(o.v);}
+function audit(msg,cls=""){const el=$("audit");if(el.querySelector(".muted"))el.innerHTML="";el.insertAdjacentHTML("beforeend",`<div class="${cls}"><span>${now()}</span>${esc(msg)}</div>`);el.scrollTop=el.scrollHeight;}
+async function sysCall(system,action,ms,err){
+  const el=$("sys");if(el.querySelector(".muted"))el.innerHTML="";
+  const li=document.createElement("li");li.innerHTML=`<span><b>${esc(system)}</b> · ${esc(action)}</span><small>…</small>`;el.appendChild(li);
+  await wait(ms);
+  li.querySelector("small").textContent=`${ms} ms`; if(err){li.classList.add("err");}
+  audit(`${system}: ${action}${err?": "+err:""}`,err?"hand":"ok");
+}
+function setRail(nodes){S.rail=nodes.map(n=>({...n,st:"",note:""}));renderRail();}
+function mark(k,st,note){const n=S.rail.find(x=>x.k===k);if(!n)return;n.st=st;if(note!==undefined)n.note=note;renderRail();}
+function renderRail(){$("rail").innerHTML=S.rail.length?S.rail.map(n=>`<li class="${n.st}"><i></i><b>${esc(n.label)}</b>${n.note?`<span>${esc(n.note)}</span>`:""}</li>`).join(""):`<li class="skip"><b>Waiting</b><span>Start a conversation on the left.</span></li>`;}
+function guard(i){S.guardHits.add(i);renderGuards();}
+function renderGuards(){$("guards").innerHTML=IND[S.ind].guards.map((g,i)=>`<li class="${S.guardHits.has(i)?"hit":""}">${esc(g)}</li>`).join("");}
+function newCase({title,status,meta}){
+  S.caseSeq++;const id=IND[S.ind].casePrefix+String(IND[S.ind].caseStart+S.caseSeq).padStart(5,"0");
+  S.cases.unshift({id,title,status,meta});renderCases();audit(`${IND[S.ind].caseNoun} ${id} created: ${title}`,"ok");return id;
+}
+function renderCases(){
+  const L={open:"Open",human:"With a person",closed:"Resolved",sev:"Sev-1 · paged"};
+  $("cases-title").textContent=IND[S.ind].caseLabel;
+  $("cases").innerHTML=S.cases.length?S.cases.map(c=>`<div class="case"><b>${esc(c.title)}</b><span class="st ${c.status}">${L[c.status]}</span><span class="id">${c.id}</span><span class="meta">${esc(c.meta)}</span></div>`).join(""):`<p class="muted">None yet.</p>`;
+}
+function brief(b){const el=$("brief");el.hidden=false;el.innerHTML=`<h4>Brief handed to the person</h4><dl>${Object.entries(b).map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`;}
+function renderKpis(){
+  const m=S.metrics,I=IND[S.ind];const tot=m.contained+m.handed;const rate=tot?m.contained/tot*100:0;const avg=m.ratingN?m.ratingSum/m.ratingN:0;
+  $("kpis").innerHTML=`
+    <div class="kpi"><div class="l">Conversations</div><div class="v">${(m.conv).toLocaleString()}</div><div class="d">this month, incl. this session</div></div>
+    <div class="kpi"><div class="l">Resolved by the assistant</div><div class="v">${rate.toFixed(1)}%</div><div class="band"><i style="left:${I.band[0]}%;width:${I.band[1]-I.band[0]}%"></i><b style="left:${rate}%"></b></div><div class="d">shaded band = the ${I.band[0]}–${I.band[1]}% expected without a person</div></div>
+    <div class="kpi"><div class="l">Routed to a person</div><div class="v">${m.handed.toLocaleString()}</div><div class="d">live agent or back-office case, with a brief</div></div>
+    <div class="kpi"><div class="l">Average rating</div><div class="v">${avg?avg.toFixed(1):"n/a"}<span style="font-size:13px;color:var(--soft)"> / 5</span></div><div class="d">${m.ratingN.toLocaleString()} ratings</div></div>
+    <div class="kpi"><div class="l">Handle time</div><div class="v">${I.handle.bot}</div><div class="d">assistant · vs ${I.handle.human} for a person</div></div>`;
+}
+function endConv(outcome){ // outcome: "contained" | "handed"
+  if(S.ended) return; S.ended=true; S.outcome=outcome; S.metrics.conv++; S.metrics[outcome]++; renderKpis();
+}
+async function rate(){
+  await say("Before you go, how did I do today?");
+  const r=await ask([1,2,3,4,5].map(n=>({label:"★".repeat(n),v:n})));
+  S.metrics.ratingSum+=r;S.metrics.ratingN++;renderKpis();audit(`Customer rating: ${r}/5`);
+  mark("rate","done",`${r}/5`);
+  await say(r>=4?"Thank you, glad I could help.":"Thank you. I've logged that so we can do better.");
+}
+async function menu(first){
+  S.flow=null;S.ended=false;S.outcome=null;S.pending=null;
+  const I=IND[S.ind];
+  if(first) await say(I.greeting);
+  else await say("Is there anything else I can help with?");
+  const v=await askTop([...I.intents.map(i=>({label:i.chip,v:i.k})),{label:"Talk to a person",v:"agent",alt:true},...(first?[]:[{label:"That's all, thanks",v:"end",alt:true}])],{menu:true});
+  if(v===null)return;
+  if(v==="end"){await say("Thanks for chatting. Goodbye!");$("chips").innerHTML="";return;}
+  if(v==="agent"){handoff("Customer asked for a person");return;}
+  startFlow(v,I.intents.find(i=>i.k===v).chip);
+}
+async function startFlow(k,heardAs,conf){
+  const I=IND[S.ind];const f=I.intents.find(i=>i.k===k);S.flow=k;S.ended=false;S.misses=0;
+  $("flow-name").textContent=f.name;setRail(f.nodes);mark("intent","done",conf?`${heardAs} · ${conf}% confidence`:heardAs);
+  audit(`Intent recognised: ${f.name}${conf?` (${conf}%)`:""}`,"pol");
+  try{await f.run();}catch(e){if(e&&e.message==="abort")return;throw e;}
+  await menu(false);
+}
+function abortPending(){const p=S.pending;S.pending=null;$("chips").innerHTML="";if(p)p.reject(new Error("abort"));}
+async function askTop(options,meta){try{return await ask(options,meta);}catch(e){if(e&&e.message==="abort")return null;throw e;}}
+async function verify(){
+  const I=IND[S.ind];mark("verify","now");
+  if(S.verified){mark("verify","done","Already verified this session");await say("You're already verified for this session, so I'll go straight to it.");return;}
+  await say(I.verifyText);
+  let v=await ask([{label:I.verifyChip,v:"ok"},{label:"I didn't receive it",v:"no"}]);
+  if(v==="no"){await say(I.verifyAlt);await ask([{label:I.verifyAltChip,v:"ok"}]);}
+  await sysCall(I.idSystem,"one-time code validated",160);
+  S.verified=true;mark("verify","done","Code matched · session verified");audit("Identity verified; account actions now permitted","pol");
+  await say("Thanks, that matches. You're verified.");
+}
+async function handoff(reason,extra={}){
+  const I=IND[S.ind];guard(I.agentGuard);
+  if(!S.rail.length){setRail([{k:"intent",label:"Intent"},{k:"hand",label:"Handoff"}]);mark("intent","done",reason);}
+  const node=S.rail.find(n=>n.k==="hand")?"hand":S.rail[S.rail.length-1].k;
+  mark(node,"hand","Live agent · brief attached");
+  await sysCall(I.agentSystem,"conversation transferred with brief",210);
+  const id=newCase({title:"Live agent handoff",status:"human",meta:`${reason} · verified: ${S.verified?"yes":"no"} · transcript attached`});
+  brief({Reason:reason,Verified:S.verified?"Yes, one-time code":"No; verify before disclosing",Context:S.flow?IND[S.ind].intents.find(i=>i.k===S.flow).name:"Opened from menu",Reference:id,...extra});
+  if(S.outcome==="contained"){S.metrics.contained--;S.metrics.handed++;S.outcome="handed";renderKpis();audit("Outcome re-attributed: routed to a person after assistant resolution","hand");}
+  else endConv("handed");
+  await say(`I'm connecting you to a person now. They can see everything we've covered, so you won't need to repeat yourself. Reference <b>${id}</b>.`);
+  S.flow=null;S.pending=null;$("chips").innerHTML="";
+  const nx=await askTop([{label:"Start a new conversation",v:"new",alt:true}]);
+  if(nx===null)return;
+  await menu(true);
+}
+
+/* ===================== industries & flows ===================== */
+const IND={
+ bank:{
+  name:"Retail bank",bot:"Northbridge Assistant",avatar:"N",hint:"Payments, cards and loans, with verification before anything is disclosed or moved.",
+  greeting:"Hello, I'm the Northbridge assistant. I can help with payments, cards and your loan, and I'll bring in a person whenever that's the right call. What's happened?",
+  seeds:{conv:1284,contained:771,handed:513,ratingSum:2880,ratingN:640},band:[55,65],handle:{bot:"2m 10s",human:"8m 40s"},
+  caseLabel:"Cases raised",caseNoun:"Case",casePrefix:"CS-2026-",caseStart:4471,
+  idSystem:"Identity service",agentSystem:"Contact centre",
+  verifyText:"Before I look at your account I need to verify it's you. I've sent a one-time code to your mobile ending <b>4471</b>.",verifyChip:"Enter code 283 119",verifyAlt:"No problem. I've sent it to your registered email instead.",verifyAltChip:"Enter emailed code 904 227",
+  guards:["Nothing is disclosed or moved before identity is verified","Protective actions (block a card) may run before verification, because they can only reduce risk","Disputes of ₹25,000 or more go to a fraud analyst, never auto-decided","Words like fraud, scam, threatened or complaint hand to a person immediately","A customer reaches a person in one word, at any time"],
+  escalateGuard:3,agentGuard:4,
+  escalate:["scam","fraud","threat","complaint","harass","lawyer","ombudsman","stolen identity","someone has my"],
+  intents:[
+   {k:"pay",chip:"A payment failed",name:"Failed payment",kw:["payment","failed","declined","transfer","didn't go","not gone","bounced","upi","neft"],
+    nodes:[{k:"intent",label:"Intent"},{k:"verify",label:"Verify identity"},{k:"lookup",label:"Find payment"},{k:"diag",label:"Diagnose"},{k:"act",label:"Action"},{k:"out",label:"Outcome"},{k:"rate",label:"Rating"}],
+    async run(){
+      await verify();mark("lookup","now");await say("Let me find it. Which payment do you mean?");
+      const p=await ask([{label:"₹18,500 to Arjun Mehta, today 09:12",v:"a"},{label:"₹2,300 to Metro Utilities, yesterday",v:"b"}]);
+      await sysCall("Payments switch","transaction lookup",180);mark("lookup","done",p==="a"?"₹18,500 · 09:12 today":"₹2,300 · yesterday");mark("diag","now");
+      if(p==="a"){
+        await say("Found it. That transfer failed at 09:12 with code <b>U30</b>: the receiving bank timed out. Your account was <b>not</b> debited.",{card:`<div class="row"><span>Status</span><b>Failed · U30 timeout</b></div><div class="row"><span>Debited</span><b>No</b></div><div class="row"><span>Auto-retry</span><b>Scheduled 09:21</b></div>`});
+        mark("diag","done","U30 · beneficiary bank timeout");mark("act","now");
+        await sysCall("Payments switch","retry status",140);mark("act","done","Automatic retry at 09:21");mark("out","done","Completed · single debit");
+        await say("Good news: the automatic retry went through at <b>09:21</b> and ₹18,500 has reached Arjun Mehta. You'll see exactly one debit. Nothing else to do.");
+        audit("Resolved without a person: retry already succeeded","ok");endConv("contained");
+      } else {
+        await say("Found it. That payment failed with code <b>R03</b>: the account number doesn't match the beneficiary name at the receiving bank. It was returned to you yesterday, so you're not out of pocket.",{card:`<div class="row"><span>Status</span><b>Returned · R03 mismatch</b></div><div class="row"><span>Your balance</span><b>Restored</b></div>`});
+        mark("diag","done","R03 · account number mismatch");mark("act","now");
+        await say("This one can't be retried automatically, because the details need checking. I can raise a repair case with our payments team; they confirm the correct account with the beneficiary and complete it today.");
+        const ok=await ask([{label:"Yes, raise the case",v:"y"},{label:"No, I'll re-enter it myself",v:"n"}]);
+        if(ok==="y"){const id=newCase({title:"Payment repair · R03 mismatch",status:"human",meta:"₹2,300 to Metro Utilities · SLA: completed by 18:00 today · payments operations"});mark("act","done","Repair case raised");mark("out","done","Routed to payments ops");
+          await say(`Done. Case <b>${id}</b> is with payments operations, SLA 18:00 today. You'll get an SMS when it completes.`);endConv("handed");}
+        else{mark("act","skip","Customer will re-enter");mark("out","done","Guidance given");await say("Understood. When you re-enter it, double-check the account number against the beneficiary's name; that's what R03 means.");endConv("contained");}
+      }
+      await rate();
+    }},
+   {k:"dispute",chip:"I don't recognise a transaction",name:"Card dispute",kw:["dispute","recognise","recognize","unknown","charge","didn't make","not mine","unauthorised","unauthorized","chargeback"],
+    nodes:[{k:"intent",label:"Intent"},{k:"verify",label:"Verify identity"},{k:"sel",label:"Select transaction"},{k:"pol",label:"Policy check"},{k:"act",label:"Action"},{k:"case",label:"Case"},{k:"rate",label:"Rating"}],
+    async run(){
+      await verify();mark("sel","now");await say("Let's find it. These are the three most recent card transactions. Which one don't you recognise?");
+      const t=await ask([{label:"₹1,850 at Metro Grocer, Tue",v:1850},{label:"₹12,400 at Electro Online, Mon",v:12400},{label:"₹38,900 at Skyline Travel, Sun",v:38900}]);
+      mark("sel","done",`₹${t.toLocaleString("en-IN")}`);mark("pol","now");
+      await sysCall("Card management","transaction detail",150);await sysCall("Dispute engine","policy evaluation",90);
+      if(t>=25000){
+        guard(2);mark("pol","done",`₹${t.toLocaleString("en-IN")} ≥ ₹25,000 → analyst review`);mark("act","now");
+        await say(`Because this is ₹${t.toLocaleString("en-IN")}, policy requires a fraud analyst to review it rather than me deciding. First, would you like me to freeze the card while they do? You can unfreeze it in the app at any time.`);
+        const fr=await ask([{label:"Yes, freeze it",v:"y"},{label:"No, keep it active",v:"n"}]);
+        if(fr==="y"){await sysCall("Card management","temporary freeze",240);mark("act","done","Card frozen (reversible)");}else mark("act","skip","Freeze declined");
+        const id=newCase({title:"Card dispute · analyst review",status:"human",meta:`₹${t.toLocaleString("en-IN")} Skyline Travel · fraud analyst · decision within 2 business days · card ${fr==="y"?"frozen":"active"}`});
+        mark("case","hand","Fraud analyst · 2 business days");
+        brief({Reason:"Dispute above analyst threshold",Amount:`₹${t.toLocaleString("en-IN")} · Skyline Travel`,Verified:"Yes, one-time code",Card:fr==="y"?"Frozen at customer's request":"Active, customer declined freeze",Recommended:"Confirm merchant, check device fingerprint, decide provisional credit",Reference:id});
+        await say(`A fraud analyst has it: reference <b>${id}</b>. They'll decide within 2 business days and you'll hear by SMS and email. ${fr==="y"?"Your card is frozen; tap Unfreeze in the app if you need it sooner.":""}`);
+        endConv("handed");
+      } else {
+        mark("pol","done",`₹${t.toLocaleString("en-IN")} < ₹25,000 → provisional credit permitted`);mark("act","now");
+        await sysCall("Dispute engine","provisional credit posted",220);mark("act","done","Provisional credit posted");
+        const id=newCase({title:"Card dispute · provisional credit",status:"open",meta:`₹${t.toLocaleString("en-IN")} · credit posted now · merchant has 45 days to respond`});
+        mark("case","done","Open · merchant response ≤ 45 days");
+        await say(`I've posted a provisional credit of <b>₹${t.toLocaleString("en-IN")}</b> to your account; it's there now. The merchant has 45 days to respond; if they don't contest it, the credit becomes permanent. Reference <b>${id}</b>.`);
+        endConv("contained");
+      }
+      await rate();
+    }},
+   {k:"lost",chip:"I've lost my card",name:"Lost or stolen card",kw:["lost","stolen","missing","can't find my card","cant find my card","left my card"],
+    nodes:[{k:"intent",label:"Intent"},{k:"protect",label:"Protect first"},{k:"verify",label:"Verify identity"},{k:"replace",label:"Replacement"},{k:"out",label:"Outcome"},{k:"rate",label:"Rating"}],
+    async run(){
+      mark("protect","now");guard(1);
+      await say("I'll block the card <b>right now</b>, before anything else, because a block can only protect you, so I don't need to verify you first.");
+      await sysCall("Card management","block card ending 2210",230);mark("protect","done","Card ending 2210 blocked, 00:00:04 after intent");
+      await say("Done. The card ending 2210 is blocked. No one can use it. Now let me verify you so I can arrange a replacement.");
+      await verify();mark("replace","now");
+      await say("Where should the replacement go?");
+      const a=await ask([{label:"Registered address (ends 400 021)",v:"home"},{label:"Hold at my branch",v:"branch"}]);
+      await sysCall("Card issuance","replacement ordered",200);mark("replace","done",a==="home"?"Courier to registered address":"Hold at branch");mark("out","done","Digital card active now");
+      await say(`Replacement ordered${a==="home"?" to your registered address, 3 to 5 working days":" for collection at your branch, ready in 2 working days"}. Meanwhile a <b>digital card</b> is already active in the app for online and contactless payments.`);
+      endConv("contained");await rate();
+    }},
+   {k:"emi",chip:"Change my loan payment date",name:"Change loan payment date",kw:["emi","due date","payment date","installment","instalment","loan date","repayment","change","date"],
+    nodes:[{k:"intent",label:"Intent"},{k:"verify",label:"Verify identity"},{k:"pol",label:"Policy check"},{k:"pick",label:"Choose date"},{k:"act",label:"Action"},{k:"out",label:"Outcome"},{k:"rate",label:"Rating"}],
+    async run(){
+      await verify();mark("pol","now");await sysCall("Loan servicing","account & policy lookup",170);
+      mark("pol","done","1 change per 12 months allowed · 0 used");
+      await say("Your EMI currently debits on the <b>5th</b>. Policy allows one date change in any 12 months and you haven't used one, so we can do this now. Which date works better?");
+      mark("pick","now");const d=await ask([{label:"10th",v:10},{label:"15th",v:15},{label:"20th",v:20}]);
+      const days=d-5,adj=Math.round(days*41.2);mark("pick","done",`${d}th`);mark("act","now");
+      await sysCall("Loan servicing","due date updated",210);mark("act","done",`5th → ${d}th from next cycle`);mark("out","done",`One-time interest ₹${adj}`);
+      await say(`Done. From next month your EMI debits on the <b>${d}th</b>. Because the first cycle is ${days} days longer, a one-time interest adjustment of <b>₹${adj.toLocaleString("en-IN")}</b> is added to that instalment only; your EMI amount after that is unchanged. I've emailed the updated schedule.`);
+      endConv("contained");await rate();
+    }}
+  ]
+ },
+ tech:{
+  name:"Technology company",bot:"Helix Support",avatar:"H",hint:"Access, incidents, logins and billing: standard requests resolved, restricted ones routed with approvals.",
+  greeting:"Hi, I'm Helix Support. I can sort out logins, access, incidents and billing, and I'll bring in an engineer or a person whenever it needs one. What can I help with?",
+  seeds:{conv:942,contained:622,handed:320,ratingSum:2153,ratingN:468},band:[60,70],handle:{bot:"1m 50s",human:"11m 20s"},
+  caseLabel:"Tickets raised",caseNoun:"Ticket",casePrefix:"TKT-",caseStart:10928,
+  idSystem:"Identity provider",agentSystem:"Support desk",
+  verifyText:"Quick check it's you first. I've sent a one-time code to your registered email <b>p•••@halvorsen.co</b>.",verifyChip:"Enter code 771 204",verifyAlt:"No problem. I've sent it to the authenticator app on your registered device instead.",verifyAltChip:"Approve in authenticator",
+  guards:["No account, access or billing data is disclosed before identity is verified","Restricted resources are never granted without a named approver and a stated reason","Customer-wide impact pages the on-call engineer immediately","Refunds above $500 go to finance review, never auto-issued","Words like breach, legal or cancel contract hand to a person immediately","A customer reaches a person in one word, at any time"],
+  escalateGuard:4,agentGuard:5,
+  escalate:["breach","legal","gdpr","cancel my contract","cancel the contract","security incident","data leak","lawsuit"],
+  intents:[
+   {k:"login",chip:"I can't log in",name:"Login problem",kw:["log in","login","sign in","password","locked out","can't access my account","cant access","sso"],
+    nodes:[{k:"intent",label:"Intent"},{k:"verify",label:"Verify identity"},{k:"reset",label:"Reset"},{k:"check",label:"Check status"},{k:"out",label:"Outcome"},{k:"rate",label:"Rating"}],
+    async run(){
+      await verify();mark("reset","now");await say("Which product are you trying to reach?");
+      const p=await ask([{label:"Analytics Cloud",v:"ac"},{label:"Admin console",v:"adm"}]);
+      await sysCall("Identity provider","password reset link issued",180);mark("reset","done","Reset link sent · expires in 15 min");
+      await say("I've sent a password reset link to your registered email; it expires in 15 minutes. Give it a try.");
+      const ok=await ask([{label:"That worked",v:"y"},{label:"Still can't get in",v:"n"}]);
+      if(ok==="y"){mark("check","skip","Not needed");mark("out","done","Resolved");await say("Great, you're in. I've also cleared the two failed attempts from your account so it won't lock.");endConv("contained");}
+      else{
+        mark("check","now");await sysCall("Status service","single sign-on health",120);
+        if(p==="ac"){mark("check","done","Open incident INC-2291 · SSO");mark("out","done","Informed · subscribed to updates");
+          await say("That explains it: there's an open incident on single sign-on for Analytics Cloud (<b>INC-2291</b>, started 14 minutes ago). Your password is fine; the sign-in service is degraded. Engineers are on it; current estimate is 30 minutes.");
+          const sub=await ask([{label:"Notify me when it's fixed",v:"y"},{label:"No thanks",v:"n"}]);
+          if(sub==="y"){await sysCall("Status page","subscribed to INC-2291",110);await say("Done. You'll get an email the moment it's resolved.");}
+          endConv("contained");}
+        else{mark("check","done","No incident · account-specific");
+          await sysCall("Diagnostics","session & device bundle collected",260);
+          const id=newCase({title:"Login failure · Admin console",status:"human",meta:"Reset link issued; SSO healthy; diagnostics bundle attached · support engineer · SLA 2 hours"});
+          mark("out","hand","Support engineer · 2 h SLA");
+          brief({Reason:"Reset issued, still failing, no platform incident",Product:"Admin console",Verified:"Yes, one-time code",Attached:"Browser, session and device diagnostics bundle",Recommended:"Check conditional-access policy for this device",Reference:id});
+          await say(`There's no platform incident, so this is specific to your account. I've collected the diagnostics and raised <b>${id}</b> with a support engineer, SLA 2 hours, and they'll have everything from this chat.`);
+          endConv("handed");}
+      }
+      await rate();
+    }},
+   {k:"access",chip:"I need access to a workspace",name:"Access request",kw:["access","permission","workspace","repo","database","grant","can't open","cant open","add me"],
+    nodes:[{k:"intent",label:"Intent"},{k:"verify",label:"Verify identity"},{k:"res",label:"Resource"},{k:"pol",label:"Policy check"},{k:"act",label:"Action"},{k:"out",label:"Outcome"},{k:"rate",label:"Rating"}],
+    async run(){
+      await verify();mark("res","now");await say("Which resource do you need?");
+      const r=await ask([{label:"Analytics workspace (standard)",v:"std"},{label:"Production database (restricted)",v:"prod"}]);
+      mark("res","done",r==="std"?"Analytics workspace":"Production database");mark("pol","now");await sysCall("Access policy","resource tier & entitlements",130);
+      if(r==="std"){mark("pol","done","Standard tier → self-service allowed");mark("act","now");await sysCall("IAM","role assigned: analytics-reader",260);mark("act","done","analytics-reader assigned");mark("out","done","Active in 5 min · expires in 90 days");
+        await say("Granted. The <b>analytics-reader</b> role is assigned and will be active within 5 minutes. It expires in 90 days unless renewed; I'll remind you a week before.");endConv("contained");}
+      else{guard(1);mark("pol","done","Restricted → named approver + reason required");mark("act","now");
+        await say("Production database access is restricted: it needs approval from your manager, <b>Priya N.</b>, and a stated reason. What's it for?");
+        const why=await ask([{label:"Incident investigation",v:"Incident investigation"},{label:"Scheduled migration",v:"Scheduled migration"}]);
+        await sysCall("Approvals","request sent to Priya N.",190);
+        const id=newCase({title:"Restricted access · production database",status:"human",meta:`Reason: ${why} · approver Priya N. · SLA 4 business hours · time-boxed 24 h if approved`});
+        mark("act","done","Approval requested");mark("out","hand","Awaiting Priya N. · 4 h SLA");
+        brief({Reason:"Restricted resource requires approval",Resource:"Production database","Requested for":why,Verified:"Yes, one-time code",Recommended:"Approve as time-boxed 24-hour access with session recording",Reference:id});
+        await say(`Request <b>${id}</b> sent to Priya N. with the reason "${why}". If approved, access is time-boxed to 24 hours with session recording. You'll be notified either way within 4 business hours.`);endConv("handed");}
+      await rate();
+    }},
+   {k:"outage",chip:"The app is down for us",name:"Outage or error report",kw:["down","outage","error","502","503","crash","not loading","broken","slow","timeout"],
+    nodes:[{k:"intent",label:"Intent"},{k:"verify",label:"Verify identity"},{k:"triage",label:"Triage impact"},{k:"check",label:"Check incidents"},{k:"act",label:"Action"},{k:"out",label:"Outcome"},{k:"rate",label:"Rating"}],
+    async run(){
+      mark("verify","skip","Not needed to report; nothing disclosed");audit("Verification skipped: reporting an outage discloses nothing","pol");
+      mark("triage","now");await say("Sorry about that. To route it right: who's affected?");
+      const who=await ask([{label:"Just me",v:"me"},{label:"My whole team",v:"team"},{label:"Our customers",v:"cust"}]);
+      mark("triage","done",who==="me"?"Single user":who==="team"?"One team":"Customer-facing");mark("check","now");await sysCall("Incident management","open incidents by service",140);
+      if(who==="cust"){guard(2);mark("check","done","No matching incident");mark("act","now");await sysCall("On-call paging","Sev-1 page sent",150);await sysCall("Status page","investigating notice posted",120);
+        const id=newCase({title:"Sev-1 · customer-facing outage",status:"sev",meta:"On-call engineer paged · status page updated · updates every 15 min"});
+        mark("act","done","On-call paged · status page live");mark("out","hand","Sev-1 · engineer owns it");
+        brief({Reason:"Customer-facing impact reported",Severity:"1, paged immediately",Reporter:"Verified session not required to page",Evidence:"Reporter statement · service health snapshot attached",Reference:id});
+        await say(`Treated as <b>Severity 1</b>. The on-call engineer has been paged (they typically acknowledge within 2 minutes) and the status page now shows "investigating". Your reference is <b>${id}</b>; I'll post updates here every 15 minutes.`);endConv("handed");}
+      else if(who==="team"){mark("check","done","Matches INC-2304 · regional API latency");mark("act","now");await sysCall("Incident management","attached to INC-2304",110);mark("act","done","Attached as affected party");mark("out","done","Informed · ETA 45 min");
+        await say("This matches an open incident, <b>INC-2304</b>, elevated API latency in your region, started 22 minutes ago. I've attached your team so you get updates. Current estimate to restore is 45 minutes; no action needed from you.");endConv("contained");}
+      else{mark("check","done","No incident · local");mark("act","now");
+        await say("No wider incident, so let's try two quick things: 1) a hard refresh (Ctrl/Cmd + Shift + R), then 2) sign out and back in. Did either fix it?");
+        const ok=await ask([{label:"Yes, fixed",v:"y"},{label:"No, still broken",v:"n"}]);
+        if(ok==="y"){mark("act","done","Guided fix worked");mark("out","done","Resolved");await say("Good. That usually means a stale session token. All sorted.");endConv("contained");}
+        else{await sysCall("Diagnostics","console & network capture collected",240);const id=newCase({title:"Application error · single user",status:"human",meta:"Guided steps failed · diagnostics attached · support engineer · SLA 4 hours"});
+          mark("act","done","Diagnostics collected");mark("out","hand","Support engineer · 4 h SLA");
+          brief({Reason:"Local error persists after guided steps",Impact:"Single user",Attached:"Console and network capture",Recommended:"Review failing request in capture",Reference:id});
+          await say(`I've captured the diagnostics and raised <b>${id}</b> with a support engineer, SLA 4 hours. They'll start from what we've already tried.`);endConv("handed");}
+      }
+      await rate();
+    }},
+   {k:"bill",chip:"Question about an invoice",name:"Billing question",kw:["invoice","billing","charged","charge","refund","plan","subscription","upgrade","annual","payment"],
+    nodes:[{k:"intent",label:"Intent"},{k:"verify",label:"Verify identity"},{k:"look",label:"Look up"},{k:"pol",label:"Policy check"},{k:"act",label:"Action"},{k:"out",label:"Outcome"},{k:"rate",label:"Rating"}],
+    async run(){
+      await verify();mark("look","now");await say("What's the question?");
+      const q=await ask([{label:"I think we were charged twice",v:"dup"},{label:"Move us to the annual plan",v:"annual"}]);
+      await sysCall("Billing system","account & invoice lookup",170);
+      if(q==="dup"){mark("look","done","Two charges of $1,240 on 28 Sep");mark("pol","now");guard(3);mark("pol","done","$1,240 > $500 → finance review");mark("act","now");
+        await say("You're right. I can see two charges of <b>$1,240</b> on 28 September for the same invoice. Refunds above $500 need a finance reviewer to release them, so I can't issue it myself, but I can get it to them now with everything attached.");
+        await sysCall("Finance workflow","refund review opened",160);
+        const id=newCase({title:"Duplicate charge · refund review",status:"human",meta:"$1,240 duplicate on 28 Sep · finance review · released within 2 business days"});
+        mark("act","done","Refund review opened");mark("out","hand","Finance · 2 business days");
+        brief({Reason:"Duplicate charge above auto-refund limit",Amount:"$1,240 · invoice INV-30417",Verified:"Yes, one-time code",Evidence:"Both charge records and the invoice attached",Recommended:"Release refund to original payment method",Reference:id});
+        await say(`Reference <b>${id}</b>. Finance will release the $1,240 to the original payment method within 2 business days; you'll get a confirmation email when it's sent.`);endConv("handed");}
+      else{mark("look","done","Monthly plan · $1,090/mo");mark("pol","now");mark("pol","done","Self-service plan change allowed");mark("act","now");
+        await say("You're on monthly at <b>$1,090</b>. Annual is <b>$11,900</b>, which is $1,180 less than 12 months of monthly ($13,080). Switching today applies a prorated credit of <b>$412</b> for the unused part of this month. Shall I switch you?",{card:`<div class="row"><span>Monthly × 12</span><b>$13,080</b></div><div class="row"><span>Annual</span><b>$11,900</b></div><div class="row"><span>Saving</span><b>$1,180</b></div><div class="row"><span>Prorated credit today</span><b>$412</b></div>`});
+        const ok=await ask([{label:"Yes, switch to annual",v:"y"},{label:"Not now",v:"n"}]);
+        if(ok==="y"){await sysCall("Billing system","plan changed to annual",230);mark("act","done","Plan changed · $412 credit applied");mark("out","done","Invoice emailed");
+          await say("Done. You're on annual. The $412 credit is applied and the new invoice for $11,488 ($11,900 less the credit) is in your inbox.");}
+        else{mark("act","skip","Customer declined");mark("out","done","Quote provided");await say("No problem. The quote is valid for 30 days and I've emailed it to you.");}
+        endConv("contained");}
+      await rate();
+    }}
+  ]
+ }
+};
+
+/* ===================== free-text understanding ===================== */
+const norm=s=>s.toLowerCase().replace(/[^a-z0-9₹$ ]/g," ").replace(/\s+/g," ").trim();
+function detectIntent(text){
+  const t=norm(text);const I=IND[S.ind];let best=null;
+  I.intents.forEach(i=>{const hits=i.kw.filter(k=>t.includes(k)).length;if(hits&&(!best||hits>best.hits))best={i,hits};});
+  if(!best)return null;return {intent:best.i,conf:Math.min(97,62+best.hits*11)};
+}
+async function freeText(text){
+  if(S.busy)return;S.busy=true;userMsg(text);const t=norm(text);const I=IND[S.ind];
+  try{
+    const hitEsc=I.escalate.find(k=>t.includes(k));
+    if(hitEsc){guard(I.escalateGuard);abortPending();handoff(`Escalation word detected: "${hitEsc}"`,{Priority:"High"});return;}
+    if(/(^|\s)(agent|human|person|representative|someone)(\s|$)/.test(t)){abortPending();handoff("Customer asked for a person");return;}
+    if(S.pending&&S.pending.menu){
+      const d=detectIntent(text);
+      if(d){abortPending();S.misses=0;startFlow(d.intent.k,d.intent.name,d.conf);return;}
+      if(/that\s*'?s all|no thanks|nothing else|(^|\s)bye(\s|$)|goodbye/.test(t)){abortPending();await say("Thanks for chatting. Goodbye!");return;}
+      abortPending();S.misses++;
+      if(S.misses>=2){await say("I'm not getting this right, and I don't want to waste your time. I can connect you to a person now, or you can pick from the list.");const v=await askTop([{label:"Connect me to a person",v:"agent"},{label:"Show me the options",v:"menu",alt:true}]);if(v===null)return;if(v==="agent")handoff("Assistant could not identify the request");else{S.misses=0;menu(true);}return;}
+      await say("I'm not sure I've understood. Could you say a bit more, or pick one of these?");menu(true);return;
+    }
+    if(S.pending){
+      const idx=S.pending.options.findIndex(o=>{const l=norm(o.label);return l.includes(t)||t.includes(l)||(t.length>2&&l.split(" ").some(w=>w.length>3&&t.includes(w)));});
+      if(idx>=0){answerTyped(idx);return;}
+      const opts=S.pending.options;
+      await say("Tap one of the options below, or type <b>agent</b> to reach a person.");
+      $("chips").innerHTML=opts.map((o,i)=>`<button type="button" data-i="${i}" class="${o.alt?"alt":""}">${esc(o.label)}</button>`).join("");return;
+    }
+    if(S.flow){await say("One moment, I'm just finishing that.");return;}
+    const d=detectIntent(text);
+    if(d){S.misses=0;startFlow(d.intent.k,d.intent.name,d.conf);return;}
+    S.misses++;
+    if(S.misses>=2){await say("I'm not getting this right, and I don't want to waste your time. I can connect you to a person now, or you can pick from the list.");const v=await askTop([{label:"Connect me to a person",v:"agent"},{label:"Show me the options",v:"menu",alt:true}]);if(v===null)return;if(v==="agent")handoff("Assistant could not identify the request");else{S.misses=0;menu(true);}return;}
+    await say("I'm not sure I've understood. Could you say a bit more, or pick one of these?");
+    menu(true);
+  } finally{S.busy=false;}
+}
+function answerTyped(i){const p=S.pending;S.pending=null;$("chips").innerHTML="";p.resolve(p.options[i].v);}
+
+/* ===================== wiring ===================== */
+function boot(ind){
+  S=fresh(ind);const I=IND[ind];
+  document.querySelectorAll(".industry button").forEach(b=>b.classList.toggle("on",b.dataset.i===ind));
+  $("ind-hint").textContent=I.hint;$("bot-name").textContent=I.bot;$("bot-avatar").textContent=I.avatar;
+  $("msgs").innerHTML="";$("chips").innerHTML="";$("sys").innerHTML='<li class="muted">Nothing yet.</li>';$("audit").innerHTML='<div class="muted">Nothing yet.</div>';$("brief").hidden=true;$("flow-name").textContent="No conversation yet";
+  renderGuards();renderCases();renderKpis();setRail([]);
+  sysMsg(`${I.name} · session started`);
+  menu(true);
+}
+$("chips").addEventListener("click",e=>{const b=e.target.closest("button[data-i]");if(b)answer(+b.dataset.i);});
+$("composer").addEventListener("submit",e=>{e.preventDefault();const v=$("inp").value.trim();if(!v)return;$("inp").value="";freeText(v);});
+$("restart").addEventListener("click",()=>boot(S.ind));
+document.querySelector(".industry").addEventListener("click",e=>{const b=e.target.closest("button[data-i]");if(b)boot(b.dataset.i);});
+boot("bank");
+
+</script>
+<script>if(new URLSearchParams(location.search).get("embed")==="1"||/^aq-embed/.test(window.name)){document.documentElement.classList.add("aq-embed");}</script>
+</body>
+</html>

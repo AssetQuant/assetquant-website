@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting pipeline orchestration | AssetQuant</title>
+<meta name="description" content="Interactive demonstration: a quarter-end reporting chain for 25 funds, fanned out by data domain with validation rules and a human review gate.">
+<style>
+:root{
+  --navy:#0d2a5e; --blue:#2563eb; --lblue:#9dbdf0; --ink:#33415c; --soft:#64748b;
+  --mist:#f3f7fd; --line:#e2e9f4; --white:#fff;
+  --teal:#0e8a6d; --tealbg:#e5f4ef; --red:#b3402a; --redbg:#faece8; --amber:#b45309; --amberbg:#fdf4e0; --gold:#e7b12e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--white);line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:800;font-size:18px;color:var(--navy)}
+.brand span{color:var(--blue)}
+.back{font-size:13.5px;font-weight:500;color:var(--blue)}
+.back:hover{text-decoration:underline}
+.head{padding:44px 0 18px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.kicker{display:block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1{font-size:clamp(26px,3.6vw,38px);color:var(--navy);letter-spacing:-.02em;font-weight:800;line-height:1.1}
+h1 em{font-style:normal;color:var(--blue)}
+.sub{margin-top:8px;color:var(--soft);font-size:15px;max-width:68ch}
+.pill{font-size:12px;font-weight:600;color:#7a5a12;background:var(--amberbg);border:1px solid #f3e0b3;border-radius:999px;padding:6px 12px;white-space:nowrap}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:10px 0 14px}
+.kpi{background:var(--mist);border-radius:12px;padding:15px 16px}
+.kpi .l{font-size:12px;color:var(--soft);font-weight:500}
+.kpi .v{font-size:25px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:11.5px;font-weight:600;margin-top:2px;color:var(--soft)}
+.good{color:var(--teal)!important} .bad{color:var(--red)!important} .warn{color:var(--amber)!important}
+.headline{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 18px;font-size:14px;color:var(--ink);line-height:1.6}
+.headline b{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px}
+.steps span{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);display:inline-flex;align-items:center;gap:8px}
+.steps span b{width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:10.5px;display:inline-flex;align-items:center;justify-content:center}
+.steps span:not(:last-child):after{content:"→";color:#b9c7dc;margin-left:6px}
+
+.section{margin-top:30px}
+.sec-h{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sec-h h2{font-size:19px;color:var(--navy);font-weight:800;letter-spacing:-.01em}
+.sec-h h2 small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:3px}
+.sec-h .hint{font-size:12.5px;color:var(--soft)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid2 .span2{grid-column:1/-1}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--white);display:flex;flex-direction:column}
+.panel-in{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.panel h3{font-size:15px;color:var(--navy);font-weight:700;line-height:1.3}
+.panel .hint{font-size:12px;color:var(--soft);margin-top:-6px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--soft);font-weight:600}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.sw.ln{width:16px;height:3px;border-radius:2px}
+.sw.navy{background:var(--navy)} .sw.blue{background:var(--blue)} .sw.lblue{background:var(--lblue)} .sw.gold{background:var(--gold)} .sw.red{background:var(--red)}
+.scroll-x{overflow-x:auto}
+.guard .how-inline{display:inline;font-size:13px}
+svg text{font-family:inherit}
+.chart{width:100%;height:auto;display:block}
+.insight{margin-top:auto;border-left:3px solid var(--gold);background:#fffaf0;border-radius:0 10px 10px 0;padding:11px 13px;font-size:12.5px;color:#5c4a1e;line-height:1.55}
+.insight b{color:#3b2f10}
+.insight .arrow{color:var(--blue);font-weight:700}
+
+.heat{display:grid;gap:4px;font-size:11px}
+.heat .hc{font-weight:700;color:var(--soft);text-align:center;font-size:10.5px;padding-bottom:2px}
+.heat .hl{font-weight:700;color:var(--navy);padding-right:8px;white-space:nowrap;display:flex;align-items:center;font-size:11.5px}
+.heat .cell{border-radius:5px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.heat .cell.dk{color:#fff}
+.heat-leg{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soft);margin-top:4px}
+.heat-leg i{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#eef4fd,#9dbdf0,#2563eb,#0d2a5e)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft);font-weight:700;text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th:first-child,thead th.l{text-align:left}
+tbody td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody td:first-child,tbody td.l{text-align:left}
+tbody td:first-child{font-weight:800;color:var(--navy)}
+tbody tr:last-child td{border-bottom:none}
+.chip{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px}
+.chip.auto{background:var(--tealbg);color:var(--teal)} .chip.assist{background:#dce8fb;color:#1d4fbd} .chip.manual{background:var(--redbg);color:var(--red)}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+@media(max-width:900px){.duo{grid-template-columns:1fr}}
+.vsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px}
+.vsum .kpi{padding:12px 14px}
+.vsum .kpi .v{font-size:21px}
+
+.moves{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.move{border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;background:var(--white);position:relative;cursor:pointer;transition:.2s;display:flex;flex-direction:column;gap:8px}
+.move:hover{border-color:#b9cdf0}
+.move.on{border-color:var(--blue);box-shadow:0 10px 24px rgba(37,99,235,.10)}
+.move.na{cursor:default}
+.move .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.move .code{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--blue)}
+.move .tick{width:20px;height:20px;border-radius:6px;border:1.5px solid #c9d6ea;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:#fff;flex:none}
+.move.on .tick{background:var(--blue);border-color:var(--blue)}
+.move h3{font-size:15px;color:var(--navy);line-height:1.3}
+.move .val{display:flex;flex-wrap:wrap;gap:6px}
+.move .val span{font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--mist);color:var(--navy)}
+.move .val span.v{background:var(--tealbg);color:var(--teal)}
+.move .val span.r{background:var(--amberbg);color:var(--amber)}
+.move p{font-size:12.5px;color:var(--soft);line-height:1.55}
+.move .how{font-size:12px;color:var(--ink);border-top:1px solid var(--line);padding-top:8px;margin-top:auto}
+.move .how b{color:var(--navy)}
+.guard{border:1px solid var(--line);border-left:3px solid var(--navy);border-radius:12px;padding:15px 18px;background:var(--mist);margin-top:14px;font-size:13px;color:var(--ink)}
+.guard b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.guard small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:4px}
+.foot{border-top:1px solid var(--line);margin-top:40px;padding:20px 0 38px;font-size:12.5px;color:var(--soft)}
+.move:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.runbar{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;margin:14px 0 16px}
+.btn-run{font:inherit;font-size:14px;font-weight:800;color:#fff;background:var(--blue);border:0;border-radius:999px;padding:11px 20px;cursor:pointer;box-shadow:0 10px 24px rgba(37,99,235,.25)}
+.btn-run:hover{background:#1d4fd8}
+.btn-run:disabled{background:#9dbdf0;box-shadow:none;cursor:default}
+.btn-ghost{font:inherit;font-size:13px;font-weight:700;color:var(--navy);background:var(--white);border:1px solid var(--line);border-radius:999px;padding:10px 16px;cursor:pointer}
+.runstate{font-size:12.5px;color:var(--soft);font-weight:600}
+.legend-r{margin-left:auto}
+.st{width:11px;height:11px;border-radius:50%;display:inline-block;border:2px solid #c9d6ea;background:#fff}
+.st.active{border-color:var(--blue);background:#dce8fb}
+.st.done{border-color:var(--teal);background:var(--teal)}
+.st.exc{border-color:var(--gold);background:#fff3cf}
+.st.human{border-color:var(--navy);background:var(--navy)}
+
+/* svg node + edge states */
+.edge{fill:none;stroke:#cdd9ea;stroke-width:2}
+.edge.flow{stroke:var(--blue);stroke-dasharray:6 8;animation:flow .9s linear infinite}
+.edge.done{stroke:var(--teal)}
+@keyframes flow{to{stroke-dashoffset:-28}}
+.node rect,.node circle{fill:#fff;stroke:#c9d6ea;stroke-width:1.6;transition:all .25s}
+.node text{fill:var(--navy);font-size:11.5px;font-weight:700}
+.node .sub{fill:var(--soft);font-size:9.5px;font-weight:600}
+.node.active rect,.node.active circle{stroke:var(--blue);fill:#eaf1fe;animation:pulse 1s ease-in-out infinite}
+.node.done rect,.node.done circle{stroke:var(--teal);fill:#f1faf6}
+.node.exc rect{stroke:var(--gold);fill:#fff8e6}
+.node.human rect{fill:var(--navy);stroke:var(--navy)}
+.node.human text{fill:#fff}
+.node.human .sub{fill:#9db8e8}
+.node.human.done rect{fill:var(--teal);stroke:var(--teal)}
+@keyframes pulse{50%{stroke-width:3.2}}
+.lanelab{fill:var(--navy);font-size:12px;font-weight:800}
+.lanesub{fill:var(--soft);font-size:10px;font-weight:600}
+.badge-exc{fill:var(--gold)}
+.badge-exc-t{fill:#fff;font-size:10px;font-weight:800}
+.tick{fill:var(--teal);font-size:12px;font-weight:800}
+
+.log{background:#071b54;color:#cfe0fb;border-radius:10px;padding:12px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.6;min-height:300px;max-height:300px;overflow:auto}
+.logline{white-space:nowrap}
+.logline .t{color:#7fa8e0;margin-right:10px}
+.logline.ok{color:#7ef0b2} .logline.exc{color:#ffd166} .logline.muted{color:#7fa8e0} .logline.gate{color:#fff;font-weight:700}
+.stages{display:grid;gap:8px}
+.stages div{font-size:12.5px;color:var(--soft);line-height:1.5;padding:9px 12px;background:var(--mist);border-radius:9px}
+.stages b{display:block;color:var(--navy);font-size:12.5px;margin-bottom:1px}
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:22px}
+.find{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 16px}
+.find b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.find p{font-size:12.5px;color:var(--soft);line-height:1.5}
+@media(prefers-reduced-motion:reduce){.edge.flow,.node.active rect,.node.active circle{animation:none}}
+
+.panel-in.tight{padding:10px 10px 6px}
+.mt18{margin-top:18px}
+.mt14{margin-top:14px}
+
+</style>
+
+<style>.aq-demo-disclosure{max-width:1140px;margin:16px auto 0;padding:11px 16px;border:1px solid #c9daf0;background:#f3f8ff;color:#405b80;border-radius:8px;font:12px/1.5 Arial,sans-serif;display:flex;gap:10px;align-items:flex-start}.aq-demo-disclosure strong{color:#071b54;white-space:nowrap}.aq-demo-disclosure span{flex:1}@media(max-width:700px){.aq-demo-disclosure{margin:12px 14px 0;display:block}.aq-demo-disclosure strong{display:block;margin-bottom:3px;white-space:normal}}</style>
+
+<style>
+/* V58.1 — canonical AssetQuant lockup on internal demo pages */
+.brand-lockup{display:inline-flex!important;align-items:center!important;gap:8px!important;color:#0d2a5e!important;font-weight:800!important;text-decoration:none!important}
+.brand-lockup img{display:block;width:54px;height:34px;object-fit:contain;flex:none}
+.brand-lockup .brand-wordmark{color:#0d2a5e!important;font-size:18px;line-height:1;letter-spacing:-.025em}
+@media(max-width:640px){.brand-lockup{gap:6px!important}.brand-lockup img{width:46px;height:30px}.brand-lockup .brand-wordmark{font-size:16px}}
+</style>
+<style>html.aq-embed .aq-demo-disclosure,html.aq-embed .topbar{display:none!important}html.aq-embed .head{padding-top:26px}</style>
+</head>
+<body>
+<div class="aq-demo-disclosure" role="note"><strong>Illustrative demonstration · Synthetic data</strong><span>Organisations, transactions, documents, figures and outcomes shown here are fictional or modelled for demonstration purposes. No client, bank or confidential data is used. Results are illustrative, not actual client outcomes or professional advice.</span></div>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand brand-lockup" href="../index.html#capabilities" aria-label="AssetQuant home"><img src="../assets/logo-approved-aq.png" alt="AQ"><span class="brand-wordmark">AssetQuant</span></a>
+  <a class="back" href="../index.html#capabilities">← Back to AssetQuant</a>
+</div></div>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <span class="kicker">Technology &amp; data enablement · Interactive demo</span>
+      <h1>One chain. Twenty-five funds. <em>Zero re-keying.</em></h1>
+      <p class="sub">A quarter-end reporting pipeline for a 25-fund real-estate manager. Instead of 25 hand-built branches, the chain fans out by data domain, validates every figure against rules, and stops at a human gate before anything is published. Press Execute to run it.</p>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="runbar">
+    <button class="btn-run" id="run" type="button">▶ Execute quarter-end chain</button>
+    <button class="btn-ghost" id="reset" type="button">Reset</button>
+    <span class="runstate" id="runstate">Idle · last run Q2 2026 completed in 11m 40s</span>
+    <div class="legend legend-r"><span><i class="st idle"></i>Waiting</span><span><i class="st active"></i>Running</span><span><i class="st done"></i>Complete</span><span><i class="st exc"></i>Exceptions routed</span><span><i class="st human"></i>Human gate</span></div>
+  </div>
+
+  <section class="panel">
+    <div class="panel-in tight">
+      <svg class="chart" id="chain" viewBox="0 0 1300 520" role="img" aria-label="Orchestration map: trigger, fund register, four domain lanes with query, extract, validate and load stages, converging on a reporting workbook, a human review gate and publication"></svg>
+    </div>
+  </section>
+
+  <div class="duo mt18">
+    <section class="panel"><div class="panel-in">
+      <h3>Run log</h3><p class="hint">What the chain is doing, as it does it</p>
+      <div class="log" id="log" aria-live="polite"><div class="logline muted">Waiting for execution…</div></div>
+    </div></section>
+    <section class="panel"><div class="panel-in">
+      <h3>What each stage does</h3><p class="hint">Same four stages in every lane; that is what makes 25 funds maintainable</p>
+      <div class="stages">
+        <div><b>Query</b>Runs the domain's master query against the source system for all funds in scope: one parameterised query, not one per fund.</div>
+        <div><b>Extract</b>Pulls the result set and maps it to the reporting schema: fund, period, line item, value, source reference.</div>
+        <div><b>Validate</b>Applies the rule set: completeness, period roll-forward, cross-domain ties, tolerance bands. Failures become exceptions, never silent overwrites.</div>
+        <div><b>Load</b>Writes validated values into the reporting workbook cells they belong to, with the source reference attached to every figure.</div>
+      </div>
+      <h3 class="mt14">Run history</h3>
+      <div class="scroll-x"><table id="hist"><thead><tr><th>Quarter</th><th>Funds</th><th>Validations</th><th>Exceptions</th><th>Runtime</th><th>Manual edits</th></tr></thead>
+      <tbody>
+        <tr><td>Q2 2026</td><td>25</td><td>142</td><td>2</td><td>11m 40s</td><td>0</td></tr>
+        <tr><td>Q1 2026</td><td>25</td><td>142</td><td>4</td><td>12m 05s</td><td>0</td></tr>
+        <tr><td>Q4 2025</td><td>24</td><td>136</td><td>7</td><td>13m 20s</td><td>1</td></tr>
+        <tr><td>Q3 2025 <span class="chip assist">before automation</span></td><td>24</td><td>n/a</td><td>n/a</td><td>~9 working days</td><td>~2,100</td></tr>
+      </tbody></table></div>
+    </div></section>
+  </div>
+
+  <section class="findings">
+    <div class="find"><b>Fan out by domain, not by fund</b><p>Four lanes carry 25 funds because the fund is a parameter, not a branch. Adding fund 26 is a register row, not a new pipeline.</p></div>
+    <div class="find"><b>Validate before load, always</b><p>Every figure passes the rule set before it touches the workbook. Exceptions are routed to people with context attached, not overwritten and not ignored.</p></div>
+    <div class="find"><b>A human gate before publication</b><p>The chain prepares; a named reviewer approves. Automation removes the re-keying, not the accountability.</p></div>
+  </section>
+</div>
+
+
+<script>
+/* ---------- house palette + helpers ---------- */
+const C={navy:"#0d2a5e",blue:"#2563eb",lblue:"#9dbdf0",teal:"#0e8a6d",red:"#b3402a",amber:"#b45309",gold:"#e7b12e",grid:"#eef2f9",mut:"#64748b",ink:"#33415c",pale:"#c8d9f5"};
+const $=id=>document.getElementById(id);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v||1)));const n=v/p;const steps=[1,1.2,1.5,2,2.5,3,4,5,6,8,10];const m=steps.find(x=>n<=x);return m*p;}
+function ticks(max,n=4){const out=[];for(let i=0;i<=n;i++)out.push(max*i/n);return out;}
+const fmtK=v=>v>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":String(Math.round(v));
+
+/* bars (left axis) + optional line (right axis) */
+function combo(id,o){
+  const {labels,bars,line,barColor=C.navy,barColors,lineColor=C.blue,yLabel="",y1Label="",y1Max,y1Min=0,everyLabel=1,barFmt=v=>v,lineFmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=line?46:14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...bars)*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,bw=(W-pl-pr)/n,barW=bw*0.6; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  bars.forEach((v,i)=>{const x=pl+i*bw+(bw-barW)/2; out+=`<rect x="${x}" y="${y(v)}" width="${barW}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${barColors?barColors[i]:barColor}"><title>${labels[i]}: ${barFmt(v)}</title></rect>`;});
+  labels.forEach((l,i)=>{ if(i%everyLabel===0) out+=`<text x="${pl+i*bw+bw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;});
+  if(line){
+    const lMax=y1Max||niceMax(Math.max(...line)*1.1), lMin=y1Min, y1=v=>pt+(1-(v-lMin)/(lMax-lMin))*(H-pt-pb);
+    ticks(lMax).forEach(t=>out+=`<text x="${W-pr+7}" y="${y1(t)+4}" font-size="10.5" fill="${C.mut}">${+t.toFixed(2)}</text>`);
+    if(y1Label) out+=`<text x="${W-2}" y="${pt-5}" font-size="10" fill="${C.mut}" text-anchor="end">${y1Label}</text>`;
+    const pts=line.map((v,i)=>`${pl+i*bw+bw/2},${y1(v)}`).join(" ");
+    out+=`<polyline fill="none" stroke="${lineColor}" stroke-width="2.4" stroke-linejoin="round" points="${pts}"/>`;
+    line.forEach((v,i)=>out+=`<circle cx="${pl+i*bw+bw/2}" cy="${y1(v)}" r="3.2" fill="#fff" stroke="${lineColor}" stroke-width="2"><title>${labels[i]}: ${lineFmt(v)}</title></circle>`);
+  }
+  $(id).innerHTML=out;
+}
+
+/* vertical grouped bars */
+function grouped(id,o){
+  const {labels,series,yLabel="",fmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...series.flatMap(s=>s.data))*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,gw=(W-pl-pr)/n,inner=gw*0.68,bw=inner/series.length; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  labels.forEach((l,i)=>{
+    series.forEach((s,k)=>{const v=s.data[i], x=pl+i*gw+(gw-inner)/2+k*bw; out+=`<rect x="${x+1}" y="${y(v)}" width="${bw-2}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${s.color}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x+bw/2}" y="${y(v)-5}" font-size="10" font-weight="700" fill="${s.color}" text-anchor="middle">${fmt(v)}</text>`;});
+    out+=`<text x="${pl+i*gw+gw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* horizontal bars, single or grouped; optional per-row annotation */
+function hbars(id,o){
+  const {labels,series,xMax,fmt=v=>v,annot,rowH=34,labelW=150}=o;
+  const W=640,pl=labelW,pr=annot?112:70,pt=8;
+  const H=pt+labels.length*rowH+12;
+  const mx=xMax||niceMax(Math.max(...series.flatMap(s=>s.data))*1.1), x=v=>pl+v/mx*(W-pl-pr);
+  const bh=(rowH-8)/series.length; let out="";
+  ticks(mx).forEach(t=>out+=`<line x1="${x(t)}" x2="${x(t)}" y1="${pt}" y2="${H-10}" stroke="${C.grid}"/>`);
+  labels.forEach((l,i)=>{
+    const y0=pt+i*rowH+4;
+    out+=`<text x="${pl-10}" y="${y0+(rowH-8)/2+4}" font-size="11.5" font-weight="700" fill="${C.navy}" text-anchor="end">${l}</text>`;
+    series.forEach((s,k)=>{const v=s.data[i],yy=y0+k*bh,col=s.colors?s.colors[i]:s.color; out+=`<rect x="${pl}" y="${yy}" width="${Math.max(1,x(v)-pl)}" height="${bh-2}" rx="3" fill="${col}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x(v)+5}" y="${yy+bh/2+3}" font-size="10.5" font-weight="700" fill="${col}">${fmt(v)}</text>`;});
+    if(annot) out+=`<text x="${W-2}" y="${y0+(rowH-8)/2+4}" font-size="10.5" font-weight="700" fill="${C.amber}" text-anchor="end">${annot[i]}</text>`;
+  });
+  const svg=$(id); svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML=out;
+}
+
+/* heatmap in house blue scale */
+function heat(id,rows,cols,data,fmt){
+  const flat=data.flat(),mn=Math.min(...flat),mx=Math.max(...flat);
+  const stops=[[238,244,253],[157,189,240],[37,99,235],[13,42,94]];
+  const col=v=>{const t=(v-mn)/((mx-mn)||1),s=Math.min(2.999,t*3),i=Math.floor(s),f=s-i;return [0,1,2].map(k=>Math.round(stops[i][k]+(stops[i+1][k]-stops[i][k])*f));};
+  let html=`<div></div>`+cols.map(c=>`<div class="hc">${c}</div>`).join("");
+  rows.forEach((r,ri)=>{html+=`<div class="hl">${r}</div>`;cols.forEach((c,ci)=>{const v=data[ri][ci],[R,G,B]=col(v),lum=(0.299*R+0.587*G+0.114*B)/255;html+=`<div class="cell ${lum<0.55?"dk":""}" style="background:rgb(${R},${G},${B})" title="${r} · ${c}: ${fmt(v)}">${fmt(v)}</div>`;});});
+  const el=$(id); el.style.gridTemplateColumns=`auto repeat(${cols.length},1fr)`; el.innerHTML=html;
+}
+
+/* effort vs value bubbles */
+function bubble(id,o){
+  const {items,xMax=5,yMax,yLabel,fmt}=o;
+  const W=640,H=310,pl=54,pr=20,pt=24,pb=58;
+  const my=yMax||niceMax(Math.max(...items.map(i=>i.value||0))*1.15);
+  const x=v=>pl+v/xMax*(W-pl-pr), y=v=>pt+(1-v/my)*(H-pt-pb); let out="";
+  ticks(my).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  [1,2,3,4].forEach(t=>out+=`<text x="${x(t)}" y="${H-pb+20}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${t}</text>`);
+  out+=`<text x="${W-pr}" y="${H-6}" font-size="10.5" fill="${C.mut}" text-anchor="end">implementation effort →</text><text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  // "do now" corner
+  out+=`<rect x="${x(0)}" y="${y(my)}" width="${x(2)-x(0)}" height="${y(my*0.4)-y(my)}" fill="rgba(14,138,109,.06)"/><text x="${x(0.1)}" y="${y(my)+14}" font-size="10.5" font-weight="700" fill="${C.teal}">DO NOW · low effort, high value</text>`;
+  items.forEach(it=>{
+    const on=it.on!==false, r=10+it.conf/100*14, cx=x(it.effort), cy=y(it.value||my*0.035);
+    const fill=it.value?(on?C.blue:"#c9d6ea"):"#fff", stroke=it.value?(on?C.navy:"#c9d6ea"):C.mut;
+    out+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" fill-opacity="${it.value?.85:1}" stroke="${stroke}" stroke-width="1.5" ${it.value?"":'stroke-dasharray="3 3"'}><title>${it.k} ${it.name}: ${it.value?fmt(it.value):"risk / enabler"} · confidence ${it.conf}%</title></circle>`;
+    out+=`<text x="${cx}" y="${cy+4}" font-size="10.5" font-weight="800" fill="${it.value&&on?"#fff":C.navy}" text-anchor="middle">${it.k}</text>`;
+    let tx=cx+r+6, ty=cy+4, anchor="start";
+    if(it.labelPos==="above"){tx=cx;ty=cy-r-6;anchor="middle";}
+    else if(it.labelPos==="left"||tx>W-150){tx=cx-r-6;anchor="end";}
+    out+=`<text x="${tx}" y="${ty}" font-size="10.5" fill="${on?C.ink:C.mut}" text-anchor="${anchor}">${it.short}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* waterfall */
+function waterfall(id,o){
+  const {steps,totalLabel,fmt,unit=""}=o;
+  const W=640,H=275,pl=50,pr=14,pt=28,pb=58;
+  const tot=sum(steps.map(s=>s.v)), yMax=niceMax(tot*1.12)||1, y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const all=[...steps,{l:totalLabel,v:tot,total:true}], n=all.length, bw=(W-pl-pr)/n, barW=bw*0.6; let run=0,out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  out+=`<text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${unit}</text>`;
+  all.forEach((s,i)=>{
+    const x=pl+i*bw+(bw-barW)/2; let top,bot;
+    if(s.total){top=y(s.v);bot=y(0);} else {top=y(run+s.v);bot=y(run);run+=s.v;}
+    out+=`<rect x="${x}" y="${top}" width="${barW}" height="${Math.max(1.5,bot-top)}" rx="3" fill="${s.total?C.navy:(s.color||C.blue)}" ${s.soft?'fill-opacity=".55"':""}><title>${s.l}: ${fmt(s.v)}</title></rect>`;
+    out+=`<text x="${x+barW/2}" y="${top-6}" font-size="11" font-weight="700" fill="${s.total?C.navy:(s.color||C.blue)}" text-anchor="middle">${s.total?fmt(s.v):"+"+fmt(s.v)}</text>`;
+    if(!s.total&&i<n-1){const nx=pl+(i+1)*bw+(bw-barW)/2;out+=`<line x1="${x+barW}" x2="${nx}" y1="${y(run)}" y2="${y(run)}" stroke="#b9c7dc" stroke-dasharray="3 3"/>`;}
+    const w=s.l.split(" "), half=Math.ceil(w.length/2);
+    out+=`<text x="${x+barW/2}" y="${H-pb+18}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(0,half).join(" ")}</text><text x="${x+barW/2}" y="${H-pb+31}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(half).join(" ")}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* move cards with toggles -> callback */
+function renderMoves(id,moves,onChange){
+  $(id).innerHTML=moves.map(m=>`
+    <div class="move ${m.on?"on":""} ${m.value?"":"na"}" data-k="${m.k}" ${m.value?'role="button" tabindex="0" aria-pressed="'+m.on+'"':""}>
+      <div class="top"><span class="code">MOVE ${m.k}</span>${m.value?'<span class="tick" aria-hidden="true">'+(m.on?"✓":"")+'</span>':'<span class="code" style="color:var(--soft)">'+m.tag+'</span>'}</div>
+      <h3>${m.name}</h3>
+      <div class="val">${m.value?`<span class="v">+${m.fmt(m.value)} / yr</span>`:`<span class="r">${m.tag}</span>`}<span>Effort: ${m.effortLabel}</span>${m.extra?`<span>${m.extra}</span>`:""}<span>Confidence ${m.conf}%</span></div>
+      <p>${m.why}</p>
+      <div class="how"><b>How:</b> ${m.how}</div>
+    </div>`).join("");
+  const el=$(id);
+  const toggle=card=>{const m=moves.find(x=>x.k===card.dataset.k); if(!m.value) return; m.on=!m.on; onChange();};
+  el.addEventListener("click",e=>{const c=e.target.closest(".move"); if(c) toggle(c);});
+  el.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const c=e.target.closest(".move"); if(c){e.preventDefault();toggle(c);}});
+}
+
+/* ---------- chain definition ---------- */
+const LANES=[
+  {k:"perf", name:"Fund performance",   sub:"returns · NAV · distributions", y:110, valid:38, exc:0},
+  {k:"debt", name:"Debt & facilities",  sub:"loans · covenants · maturities", y:210, valid:42, exc:0},
+  {k:"prop", name:"Property & leasing", sub:"rent roll · occupancy · capex",  y:310, valid:31, exc:3},
+  {k:"val",  name:"Valuations",         sub:"external values · cap rates",    y:410, valid:31, exc:0}
+];
+const STAGES=[{k:"q",l:"Query",s:"master query",x:400},{k:"e",l:"Extract",s:"map to schema",x:540},{k:"v",l:"Validate",s:"rule set",x:680},{k:"l",l:"Load",s:"workbook cells",x:820}];
+const PW=112,PH=36, MIDY=260;
+const FUNDS=25;
+
+/* ---------- build the map ---------- */
+function pill(id,x,y,l,s,cls=""){return `<g class="node ${cls}" id="${id}"><rect x="${x-PW/2}" y="${y-PH/2}" width="${PW}" height="${PH}" rx="18"/><text x="${x}" y="${y-2}" text-anchor="middle">${l}</text><text class="sub" x="${x}" y="${y+11}" text-anchor="middle">${s}</text><text class="tick" id="${id}-tick" x="${x+PW/2-14}" y="${y-PH/2+5}" display="none">✓</text></g>`;}
+function curve(id,x1,y1,x2,y2){const mx=(x1+x2)/2;return `<path class="edge" id="${id}" d="M${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}"/>`;}
+function line(id,x1,y1,x2,y2){return `<path class="edge" id="${id}" d="M${x1} ${y1} L ${x2} ${y2}"/>`;}
+
+function buildMap(){
+  let s="";
+  // edges first (under nodes)
+  s+=line("e-trig",96,MIDY,134,MIDY);
+  LANES.forEach(L=>{ s+=curve(`e-reg-${L.k}`,246,MIDY,344,L.y); for(let i=0;i<3;i++) s+=line(`e-${L.k}-${i}`,STAGES[i].x+PW/2,L.y,STAGES[i+1].x-PW/2,L.y); s+=curve(`e-${L.k}-wb`,876,L.y,900,MIDY); });
+  s+=line("e-wb-gate",1050,MIDY,1066,MIDY);
+  s+=line("e-gate-pub",1176,MIDY,1192,MIDY);
+  s+=`<path class="edge" id="e-gate-audit" d="M1121 ${MIDY-24} L1121 ${MIDY-78}" stroke-dasharray="3 4"/>`;
+  s+=`<path class="edge" id="e-exc" d="M680 ${310+PH/2} C 680 505, 1121 505, 1121 ${MIDY+24}" stroke-dasharray="3 4"/>`;
+  // trigger
+  s+=`<g class="node" id="n-trig"><circle cx="60" cy="${MIDY}" r="36"/><text x="60" y="${MIDY-6}" text-anchor="middle">Q3 2026</text><text class="sub" x="60" y="${MIDY+7}" text-anchor="middle">quarter-end</text><text class="sub" x="60" y="${MIDY+18}" text-anchor="middle">close</text></g>`;
+  // register
+  s+=`<g class="node" id="n-reg"><rect x="134" y="${MIDY-22}" width="112" height="44" rx="12"/><text x="190" y="${MIDY-3}" text-anchor="middle">Fund register</text><text class="sub" id="reg-sub" x="190" y="${MIDY+11}" text-anchor="middle">${FUNDS} funds in scope</text></g>`;
+  // lanes
+  LANES.forEach(L=>{ s+=`<text class="lanelab" x="344" y="${L.y-33}">${L.name}</text><text class="lanesub" x="344" y="${L.y-22}">${L.sub}</text>`; STAGES.forEach(st=>s+=pill(`n-${L.k}-${st.k}`,st.x,L.y,st.l,st.s)); });
+  // exceptions badge placeholder on property validate
+  s+=`<g id="exc-badge" display="none"><circle class="badge-exc" cx="${680+PW/2-2}" cy="${310+PH/2-2}" r="10"/><text class="badge-exc-t" x="${680+PW/2-2}" y="${310+PH/2+2}" text-anchor="middle">3</text></g>`;
+  // convergence
+  s+=`<g class="node" id="n-wb"><rect x="900" y="${MIDY-24}" width="150" height="48" rx="12"/><text x="975" y="${MIDY-4}" text-anchor="middle">Reporting workbook</text><text class="sub" id="wb-sub" x="975" y="${MIDY+11}" text-anchor="middle">0 of 212 cells written</text></g>`;
+  s+=`<g class="node human" id="n-gate"><rect x="1066" y="${MIDY-24}" width="110" height="48" rx="12"/><text x="1121" y="${MIDY-4}" text-anchor="middle">Review gate</text><text class="sub" x="1121" y="${MIDY+11}" text-anchor="middle">named reviewer</text></g>`;
+  s+=`<g class="node" id="n-pub"><rect x="1192" y="${MIDY-24}" width="98" height="48" rx="12"/><text x="1241" y="${MIDY-4}" text-anchor="middle">Publish</text><text class="sub" x="1241" y="${MIDY+11}" text-anchor="middle">supplement</text></g>`;
+  s+=`<g class="node" id="n-audit"><rect x="1066" y="${MIDY-118}" width="110" height="40" rx="12"/><text x="1121" y="${MIDY-101}" text-anchor="middle">Audit log</text><text class="sub" x="1121" y="${MIDY-87}" text-anchor="middle">every write, every rule</text></g>`;
+  s+=`<text class="lanesub" x="700" y="500" text-anchor="middle">exceptions route to the review gate with source context; they are never written to the workbook</text>`;
+  $("chain").innerHTML=s;
+}
+
+/* ---------- counters / log ---------- */
+const S={funds:0,valid:0,exc:0,cells:0,start:null,done:false};
+const TOTAL_CELLS=212;
+function renderKpis(){
+  $("kpis").innerHTML=`
+    <div class="kpi"><div class="l">Funds processed</div><div class="v">${S.funds}<span style="font-size:13px;color:var(--soft)"> / ${FUNDS}</span></div><div class="d">one register, four lanes</div></div>
+    <div class="kpi"><div class="l">Validation rules passed</div><div class="v">${S.valid}</div><div class="d">completeness · roll-forward · ties · tolerance</div></div>
+    <div class="kpi"><div class="l">Exceptions routed to review</div><div class="v ${S.exc?"warn":""}">${S.exc}</div><div class="d">${S.exc?"with source context attached":"none so far"}</div></div>
+    <div class="kpi"><div class="l">Workbook cells written</div><div class="v">${S.cells}<span style="font-size:13px;color:var(--soft)"> / ${TOTAL_CELLS}</span></div><div class="d">each with a source reference</div></div>
+    <div class="kpi"><div class="l">Manual re-keys this run</div><div class="v good">0</div><div class="d">was ~2,100 per quarter</div></div>`;
+  const ws=$("wb-sub"); if(ws) ws.textContent=`${S.cells} of ${TOTAL_CELLS} cells written`;
+}
+let t0=0;
+function log(msg,cls=""){const el=$("log");const t=((performance.now()-t0)/1000).toFixed(1).padStart(5," ");el.insertAdjacentHTML("beforeend",`<div class="logline ${cls}"><span class="t">+${t}s</span>${msg}</div>`);el.scrollTop=el.scrollHeight;}
+
+/* ---------- run simulation ---------- */
+let timers=[]; const after=(ms,fn)=>timers.push(setTimeout(fn,ms));
+const setNode=(id,cls)=>{const n=$(id);if(!n)return;n.classList.remove("active","done","exc");if(cls)n.classList.add(cls);const tk=$(id+"-tick");if(tk)tk.setAttribute("display",cls==="done"?"":"none");};
+const setEdge=(id,cls)=>{const e=$(id);if(!e)return;e.classList.remove("flow","done");if(cls)e.classList.add(cls);};
+
+function run(){
+  reset(false);
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SP=reduce?0:1; // speed multiplier
+  $("run").disabled=true; $("runstate").textContent="Running…"; $("log").innerHTML=""; t0=performance.now();
+  let t=0; const step=(ms,fn)=>{t+=ms*SP;after(t,fn);};
+  step(100,()=>{setNode("n-trig","active");log("Trigger received: Q3 2026 quarter-end close confirmed by finance.");});
+  step(600,()=>{setNode("n-trig","done");setEdge("e-trig","flow");setNode("n-reg","active");log("Reading fund register… 25 funds in scope, 4 data domains.");});
+  step(700,()=>{setEdge("e-trig","done");setNode("n-reg","done");S.funds=FUNDS;renderKpis();LANES.forEach(L=>setEdge(`e-reg-${L.k}`,"flow"));log("Fan-out: 4 domain lanes started in parallel.","ok");});
+  const laneStart=t; const stageDur=[900,800,1100,900];
+  LANES.forEach((L,li)=>{
+    let lt=laneStart+li*220*SP;
+    STAGES.forEach((st,si)=>{
+      const id=`n-${L.k}-${st.k}`;
+      after(lt,()=>{ if(si===0) setEdge(`e-reg-${L.k}`,"done"); else {setEdge(`e-${L.k}-${si-1}`,"done");} setNode(id,"active"); if(si<3) setEdge(`e-${L.k}-${si}`,"flow");
+        const msgs={q:`${L.name}: master query run for ${FUNDS} funds.`,e:`${L.name}: ${[48,61,57,46][li]} rows mapped to reporting schema.`,v:`${L.name}: running ${L.valid+L.exc} rules…`,l:`${L.name}: loading validated values…`};
+        log(msgs[st.k]);});
+      lt+=stageDur[si]*SP;
+      after(lt,()=>{
+        if(st.k==="v"){ S.valid+=L.valid; renderKpis(); if(L.exc){S.exc+=L.exc;renderKpis();setNode(id,"exc");$("exc-badge").setAttribute("display","");setEdge("e-exc","flow");log(`${L.name}: ${L.exc} exceptions: rent-roll totals outside tolerance for funds 07, 12, 19. Routed to review gate.`,"exc");} else {setNode(id,"done");log(`${L.name}: ${L.valid} of ${L.valid} rules passed.`,"ok");} }
+        else if(st.k==="l"){ setNode(id,"done"); const cells=[58,54,52,48][li]-(L.exc?3:0); S.cells+=cells; renderKpis(); setEdge(`e-${L.k}-wb`,"flow"); log(`${L.name}: ${cells} cells written with source references.`,"ok"); }
+        else setNode(id,"done");
+      });
+    });
+    after(lt+300*SP,()=>{setEdge(`e-${L.k}-wb`,"done");});
+  });
+  const laneEnd=laneStart+(3*220+900+800+1100+900+400)*SP; t=laneEnd;
+  step(0,()=>{setNode("n-wb","active");log("Reporting workbook assembled: 209 of 212 cells written, 3 held pending review.");});
+  step(900,()=>{setNode("n-wb","done");setEdge("e-wb-gate","flow");setEdge("e-exc","done");setNode("n-gate","active");log("Review gate: 3 exceptions queued for the named reviewer with query, rule and prior-quarter value attached.","gate");});
+  step(1400,()=>{setEdge("e-wb-gate","done");setEdge("e-gate-audit","done");setNode("n-audit","done");log("Audit log written: 142 rule results, 209 cell writes, 3 holds.");});
+  step(700,()=>{setNode("n-gate","done");setEdge("e-gate-pub","flow");setNode("n-pub","active");log("Reviewer approved 3 corrected values. Workbook complete: 212 of 212.","ok");S.cells=TOTAL_CELLS;renderKpis();});
+  step(800,()=>{setEdge("e-gate-pub","done");setNode("n-pub","done");S.done=true;const secs=((performance.now()-t0)/1000).toFixed(0);$("runstate").textContent=`Complete in ${secs}s (accelerated for display) · 0 manual re-keys`;$("run").disabled=false;log("Q3 2026 supplement published. Chain idle.","gate");});
+}
+function reset(full=true){
+  timers.forEach(clearTimeout);timers=[];
+  Object.assign(S,{funds:0,valid:0,exc:0,cells:0,done:false});
+  document.querySelectorAll("#chain .node").forEach(n=>{n.classList.remove("active","done","exc");});
+  document.querySelectorAll("#chain .tick").forEach(t=>t.setAttribute("display","none"));
+  document.querySelectorAll("#chain .edge").forEach(e=>e.classList.remove("flow","done"));
+  const b=$("exc-badge"); if(b) b.setAttribute("display","none");
+  renderKpis();
+  if(full){$("log").innerHTML='<div class="logline muted">Waiting for execution…</div>';$("runstate").textContent="Idle · last run Q2 2026 completed in 11m 40s";$("run").disabled=false;}
+}
+
+buildMap(); renderKpis();
+$("run").addEventListener("click",run);
+if(new URLSearchParams(location.search).get("autorun")==="1"||/autorun/.test(window.name)){setTimeout(run,900);}
+$("reset").addEventListener("click",()=>reset(true));
+
+</script>
+<script>if(new URLSearchParams(location.search).get("embed")==="1"||/^aq-embed/.test(window.name)){document.documentElement.classList.add("aq-embed");}</script>
+</body>
+</html>

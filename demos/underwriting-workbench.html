@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acquisition underwriting workbench | AssetQuant</title>
+<meta name="description" content="Interactive demonstration: a five-year acquisition model with live cash flow, debt metrics, returns, sensitivity grid and assumption flags.">
+<style>
+:root{
+  --navy:#0d2a5e; --blue:#2563eb; --lblue:#9dbdf0; --ink:#33415c; --soft:#64748b;
+  --mist:#f3f7fd; --line:#e2e9f4; --white:#fff;
+  --teal:#0e8a6d; --tealbg:#e5f4ef; --red:#b3402a; --redbg:#faece8; --amber:#b45309; --amberbg:#fdf4e0; --gold:#e7b12e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--white);line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:800;font-size:18px;color:var(--navy)}
+.brand span{color:var(--blue)}
+.back{font-size:13.5px;font-weight:500;color:var(--blue)}
+.back:hover{text-decoration:underline}
+.head{padding:44px 0 18px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.kicker{display:block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1{font-size:clamp(26px,3.6vw,38px);color:var(--navy);letter-spacing:-.02em;font-weight:800;line-height:1.1}
+h1 em{font-style:normal;color:var(--blue)}
+.sub{margin-top:8px;color:var(--soft);font-size:15px;max-width:68ch}
+.pill{font-size:12px;font-weight:600;color:#7a5a12;background:var(--amberbg);border:1px solid #f3e0b3;border-radius:999px;padding:6px 12px;white-space:nowrap}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:10px 0 14px}
+.kpi{background:var(--mist);border-radius:12px;padding:15px 16px}
+.kpi .l{font-size:12px;color:var(--soft);font-weight:500}
+.kpi .v{font-size:25px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:11.5px;font-weight:600;margin-top:2px;color:var(--soft)}
+.good{color:var(--teal)!important} .bad{color:var(--red)!important} .warn{color:var(--amber)!important}
+.headline{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 18px;font-size:14px;color:var(--ink);line-height:1.6}
+.headline b{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px}
+.steps span{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);display:inline-flex;align-items:center;gap:8px}
+.steps span b{width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:10.5px;display:inline-flex;align-items:center;justify-content:center}
+.steps span:not(:last-child):after{content:"→";color:#b9c7dc;margin-left:6px}
+
+.section{margin-top:30px}
+.sec-h{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sec-h h2{font-size:19px;color:var(--navy);font-weight:800;letter-spacing:-.01em}
+.sec-h h2 small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:3px}
+.sec-h .hint{font-size:12.5px;color:var(--soft)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid2 .span2{grid-column:1/-1}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--white);display:flex;flex-direction:column}
+.panel-in{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.panel h3{font-size:15px;color:var(--navy);font-weight:700;line-height:1.3}
+.panel .hint{font-size:12px;color:var(--soft);margin-top:-6px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--soft);font-weight:600}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.sw.ln{width:16px;height:3px;border-radius:2px}
+.sw.navy{background:var(--navy)} .sw.blue{background:var(--blue)} .sw.lblue{background:var(--lblue)} .sw.gold{background:var(--gold)} .sw.red{background:var(--red)}
+.scroll-x{overflow-x:auto}
+.guard .how-inline{display:inline;font-size:13px}
+svg text{font-family:inherit}
+.chart{width:100%;height:auto;display:block}
+.insight{margin-top:auto;border-left:3px solid var(--gold);background:#fffaf0;border-radius:0 10px 10px 0;padding:11px 13px;font-size:12.5px;color:#5c4a1e;line-height:1.55}
+.insight b{color:#3b2f10}
+.insight .arrow{color:var(--blue);font-weight:700}
+
+.heat{display:grid;gap:4px;font-size:11px}
+.heat .hc{font-weight:700;color:var(--soft);text-align:center;font-size:10.5px;padding-bottom:2px}
+.heat .hl{font-weight:700;color:var(--navy);padding-right:8px;white-space:nowrap;display:flex;align-items:center;font-size:11.5px}
+.heat .cell{border-radius:5px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.heat .cell.dk{color:#fff}
+.heat-leg{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soft);margin-top:4px}
+.heat-leg i{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#eef4fd,#9dbdf0,#2563eb,#0d2a5e)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft);font-weight:700;text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th:first-child,thead th.l{text-align:left}
+tbody td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody td:first-child,tbody td.l{text-align:left}
+tbody td:first-child{font-weight:800;color:var(--navy)}
+tbody tr:last-child td{border-bottom:none}
+.chip{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px}
+.chip.auto{background:var(--tealbg);color:var(--teal)} .chip.assist{background:#dce8fb;color:#1d4fbd} .chip.manual{background:var(--redbg);color:var(--red)}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+@media(max-width:900px){.duo{grid-template-columns:1fr}}
+.vsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px}
+.vsum .kpi{padding:12px 14px}
+.vsum .kpi .v{font-size:21px}
+
+.moves{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.move{border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;background:var(--white);position:relative;cursor:pointer;transition:.2s;display:flex;flex-direction:column;gap:8px}
+.move:hover{border-color:#b9cdf0}
+.move.on{border-color:var(--blue);box-shadow:0 10px 24px rgba(37,99,235,.10)}
+.move.na{cursor:default}
+.move .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.move .code{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--blue)}
+.move .tick{width:20px;height:20px;border-radius:6px;border:1.5px solid #c9d6ea;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:#fff;flex:none}
+.move.on .tick{background:var(--blue);border-color:var(--blue)}
+.move h3{font-size:15px;color:var(--navy);line-height:1.3}
+.move .val{display:flex;flex-wrap:wrap;gap:6px}
+.move .val span{font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--mist);color:var(--navy)}
+.move .val span.v{background:var(--tealbg);color:var(--teal)}
+.move .val span.r{background:var(--amberbg);color:var(--amber)}
+.move p{font-size:12.5px;color:var(--soft);line-height:1.55}
+.move .how{font-size:12px;color:var(--ink);border-top:1px solid var(--line);padding-top:8px;margin-top:auto}
+.move .how b{color:var(--navy)}
+.guard{border:1px solid var(--line);border-left:3px solid var(--navy);border-radius:12px;padding:15px 18px;background:var(--mist);margin-top:14px;font-size:13px;color:var(--ink)}
+.guard b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.guard small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:4px}
+.foot{border-top:1px solid var(--line);margin-top:40px;padding:20px 0 38px;font-size:12.5px;color:var(--soft)}
+.move:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.uw{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start;margin-top:14px}
+@media(max-width:960px){.uw{grid-template-columns:1fr}}
+.inputs{position:sticky;top:16px}
+.ins{display:grid;gap:12px;margin-top:6px}
+.in{display:grid;grid-template-columns:1fr 78px;gap:6px 10px;align-items:center;font-size:12.5px}
+.in label{font-weight:700;color:var(--navy)}
+.in label small{display:block;font-size:10.5px;color:var(--soft);font-weight:500}
+.in input[type=number]{font:inherit;font-size:13px;font-weight:700;color:var(--navy);text-align:right;border:1px solid var(--line);border-radius:7px;padding:5px 8px;width:78px;font-variant-numeric:tabular-nums}
+.in input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--blue)}
+.presets{display:flex;gap:6px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.presets span{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin-right:4px}
+.presets button{font:inherit;font-size:12px;font-weight:700;color:var(--navy);background:var(--white);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+.presets button:hover{border-color:var(--blue)}
+.results .kpis{margin:0 0 10px}
+.flags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;min-height:8px}
+.flag{font-size:12px;font-weight:600;border-radius:999px;padding:6px 12px;display:inline-flex;align-items:center;gap:6px}
+.flag.warn{background:var(--amberbg);color:var(--amber);border:1px solid #f3e0b3}
+.flag.bad{background:var(--redbg);color:var(--red);border:1px solid #eec9bf}
+.flag.ok{background:var(--tealbg);color:var(--teal);border:1px solid #bfe3d6}
+.su,.dm{display:grid;gap:6px;font-size:13px}
+.su .r,.dm .r{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #eef2f9}
+.su .r:last-child,.dm .r:last-child{border-bottom:none}
+.su .r b,.dm .r b{font-variant-numeric:tabular-nums;color:var(--navy)}
+.su .r.tot,.dm .r.tot{font-weight:800;color:var(--navy);border-top:2px solid var(--line);border-bottom:none;padding-top:9px}
+.dm .r small{display:block;font-size:11px;color:var(--soft);font-weight:500}
+.dm .r b.bad{color:var(--red)} .dm .r b.warn{color:var(--amber)} .dm .r b.ok{color:var(--teal)}
+.cf{width:100%;border-collapse:collapse;font-size:12.5px}
+.cf th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--soft);font-weight:700;text-align:right;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.cf th:first-child{text-align:left}
+.cf td{padding:7px 10px;border-bottom:1px solid #eef2f9;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cf td:first-child{text-align:left;font-weight:600;color:var(--ink)}
+.cf tr.sub td{color:var(--soft)}
+.cf tr.tot td{font-weight:800;color:var(--navy);background:var(--mist);border-top:2px solid var(--line)}
+.cf td.neg{color:var(--red)}
+.sens{display:grid;grid-template-columns:auto repeat(5,1fr);gap:4px;font-size:12px;font-variant-numeric:tabular-nums}
+.sens .h{font-size:10.5px;font-weight:700;color:var(--soft);text-align:center;padding:4px 0}
+.sens .rl{font-size:11px;font-weight:700;color:var(--navy);display:flex;align-items:center;padding-right:8px;white-space:nowrap}
+.sens .c{border-radius:6px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy)}
+.sens .c.dk{color:#fff}
+.sens .c.base{outline:2px solid var(--navy);outline-offset:-2px}
+.sens-note{font-size:11px;color:var(--soft);margin-top:8px}
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:22px}
+.find{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 16px}
+.find b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.find p{font-size:12.5px;color:var(--soft);line-height:1.5}
+
+.mt16{margin-top:16px}
+
+</style>
+
+<style>.aq-demo-disclosure{max-width:1140px;margin:16px auto 0;padding:11px 16px;border:1px solid #c9daf0;background:#f3f8ff;color:#405b80;border-radius:8px;font:12px/1.5 Arial,sans-serif;display:flex;gap:10px;align-items:flex-start}.aq-demo-disclosure strong{color:#071b54;white-space:nowrap}.aq-demo-disclosure span{flex:1}@media(max-width:700px){.aq-demo-disclosure{margin:12px 14px 0;display:block}.aq-demo-disclosure strong{display:block;margin-bottom:3px;white-space:normal}}</style>
+
+<style>
+/* V58.1 — canonical AssetQuant lockup on internal demo pages */
+.brand-lockup{display:inline-flex!important;align-items:center!important;gap:8px!important;color:#0d2a5e!important;font-weight:800!important;text-decoration:none!important}
+.brand-lockup img{display:block;width:54px;height:34px;object-fit:contain;flex:none}
+.brand-lockup .brand-wordmark{color:#0d2a5e!important;font-size:18px;line-height:1;letter-spacing:-.025em}
+@media(max-width:640px){.brand-lockup{gap:6px!important}.brand-lockup img{width:46px;height:30px}.brand-lockup .brand-wordmark{font-size:16px}}
+</style>
+<style>html.aq-embed .aq-demo-disclosure,html.aq-embed .topbar{display:none!important}html.aq-embed .head{padding-top:26px}</style>
+</head>
+<body>
+<div class="aq-demo-disclosure" role="note"><strong>Illustrative demonstration · Synthetic data</strong><span>Organisations, transactions, documents, figures and outcomes shown here are fictional or modelled for demonstration purposes. No client, bank or confidential data is used. Results are illustrative, not actual client outcomes or professional advice.</span></div>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand brand-lockup" href="../index.html#capabilities" aria-label="AssetQuant home"><img src="../assets/logo-approved-aq.png" alt="AQ"><span class="brand-wordmark">AssetQuant</span></a>
+  <a class="back" href="../index.html#capabilities">← Back to AssetQuant</a>
+</div></div>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <span class="kicker">Real estate &amp; investment analytics · Interactive demo</span>
+      <h1>Underwrite the deal. <em>Then stress it.</em></h1>
+      <p class="sub">An acquisition of a suburban logistics asset. Change any assumption and the five-year cash flow, debt metrics, returns and sensitivity grid rebuild together, the way an investment committee actually interrogates a case. Flags appear when an assumption starts doing too much work.</p>
+    </div>
+  </header>
+
+  <div class="uw">
+    <aside class="inputs panel"><div class="panel-in">
+      <h3>Assumptions</h3><p class="hint">Drag or type · everything recalculates</p>
+      <div class="ins" id="ins"></div>
+      <div class="presets"><span>Presets</span><button type="button" data-p="base">Base</button><button type="button" data-p="down">Downside</button><button type="button" data-p="agg">Aggressive</button></div>
+    </div></aside>
+
+    <section class="results">
+      <div class="kpis" id="kpis"></div>
+      <div class="flags" id="flags"></div>
+
+      <div class="duo">
+        <div class="panel"><div class="panel-in">
+          <h3>Sources &amp; uses</h3>
+          <div class="su" id="su"></div>
+        </div></div>
+        <div class="panel"><div class="panel-in">
+          <h3>Debt metrics at entry</h3>
+          <div class="dm" id="dm"></div>
+        </div></div>
+      </div>
+
+      <div class="panel mt16"><div class="panel-in">
+        <h3>Five-year cash flow</h3><p class="hint">$ thousands · year 5 includes net sale proceeds</p>
+        <div class="scroll-x"><table class="cf" id="cf"></table></div>
+      </div></div>
+
+      <div class="duo mt16">
+        <div class="panel"><div class="panel-in">
+          <h3>Levered IRR sensitivity</h3><p class="hint">Exit cap rate (rows) × NOI growth (columns) · base case outlined</p>
+          <div class="sens" id="sens"></div>
+        </div></div>
+        <div class="panel"><div class="panel-in">
+          <h3>Where the return comes from</h3><p class="hint">Equity multiple decomposed · $ thousands</p>
+          <svg class="chart" id="attr" viewBox="0 0 640 260" role="img" aria-label="Waterfall from equity invested to total equity returned"></svg>
+        </div></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="findings">
+    <div class="find"><b>Returns and risk on one screen</b><p>IRR, multiple, cash-on-cash, DSCR and debt yield move together. An attractive IRR that needs a 1.15x DSCR is a different proposition from one that doesn't, and the committee should see both at once.</p></div>
+    <div class="find"><b>Stress is built in, not bolted on</b><p>The sensitivity grid re-runs the whole model for every cell, so the question "what if exit caps widen 75 bps and growth halves?" is answered before it's asked.</p></div>
+    <div class="find"><b>Assumption flags</b><p>Exit cap tighter than entry, growth above market, leverage past covenant headroom: the page says so, in plain words, as soon as it happens.</p></div>
+  </section>
+</div>
+
+
+<script>
+/* ---------- house palette + helpers ---------- */
+const C={navy:"#0d2a5e",blue:"#2563eb",lblue:"#9dbdf0",teal:"#0e8a6d",red:"#b3402a",amber:"#b45309",gold:"#e7b12e",grid:"#eef2f9",mut:"#64748b",ink:"#33415c",pale:"#c8d9f5"};
+const $=id=>document.getElementById(id);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v||1)));const n=v/p;const steps=[1,1.2,1.5,2,2.5,3,4,5,6,8,10];const m=steps.find(x=>n<=x);return m*p;}
+function ticks(max,n=4){const out=[];for(let i=0;i<=n;i++)out.push(max*i/n);return out;}
+const fmtK=v=>v>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":String(Math.round(v));
+
+/* bars (left axis) + optional line (right axis) */
+function combo(id,o){
+  const {labels,bars,line,barColor=C.navy,barColors,lineColor=C.blue,yLabel="",y1Label="",y1Max,y1Min=0,everyLabel=1,barFmt=v=>v,lineFmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=line?46:14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...bars)*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,bw=(W-pl-pr)/n,barW=bw*0.6; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  bars.forEach((v,i)=>{const x=pl+i*bw+(bw-barW)/2; out+=`<rect x="${x}" y="${y(v)}" width="${barW}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${barColors?barColors[i]:barColor}"><title>${labels[i]}: ${barFmt(v)}</title></rect>`;});
+  labels.forEach((l,i)=>{ if(i%everyLabel===0) out+=`<text x="${pl+i*bw+bw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;});
+  if(line){
+    const lMax=y1Max||niceMax(Math.max(...line)*1.1), lMin=y1Min, y1=v=>pt+(1-(v-lMin)/(lMax-lMin))*(H-pt-pb);
+    ticks(lMax).forEach(t=>out+=`<text x="${W-pr+7}" y="${y1(t)+4}" font-size="10.5" fill="${C.mut}">${+t.toFixed(2)}</text>`);
+    if(y1Label) out+=`<text x="${W-2}" y="${pt-5}" font-size="10" fill="${C.mut}" text-anchor="end">${y1Label}</text>`;
+    const pts=line.map((v,i)=>`${pl+i*bw+bw/2},${y1(v)}`).join(" ");
+    out+=`<polyline fill="none" stroke="${lineColor}" stroke-width="2.4" stroke-linejoin="round" points="${pts}"/>`;
+    line.forEach((v,i)=>out+=`<circle cx="${pl+i*bw+bw/2}" cy="${y1(v)}" r="3.2" fill="#fff" stroke="${lineColor}" stroke-width="2"><title>${labels[i]}: ${lineFmt(v)}</title></circle>`);
+  }
+  $(id).innerHTML=out;
+}
+
+/* vertical grouped bars */
+function grouped(id,o){
+  const {labels,series,yLabel="",fmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...series.flatMap(s=>s.data))*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,gw=(W-pl-pr)/n,inner=gw*0.68,bw=inner/series.length; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  labels.forEach((l,i)=>{
+    series.forEach((s,k)=>{const v=s.data[i], x=pl+i*gw+(gw-inner)/2+k*bw; out+=`<rect x="${x+1}" y="${y(v)}" width="${bw-2}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${s.color}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x+bw/2}" y="${y(v)-5}" font-size="10" font-weight="700" fill="${s.color}" text-anchor="middle">${fmt(v)}</text>`;});
+    out+=`<text x="${pl+i*gw+gw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* horizontal bars, single or grouped; optional per-row annotation */
+function hbars(id,o){
+  const {labels,series,xMax,fmt=v=>v,annot,rowH=34,labelW=150}=o;
+  const W=640,pl=labelW,pr=annot?112:70,pt=8;
+  const H=pt+labels.length*rowH+12;
+  const mx=xMax||niceMax(Math.max(...series.flatMap(s=>s.data))*1.1), x=v=>pl+v/mx*(W-pl-pr);
+  const bh=(rowH-8)/series.length; let out="";
+  ticks(mx).forEach(t=>out+=`<line x1="${x(t)}" x2="${x(t)}" y1="${pt}" y2="${H-10}" stroke="${C.grid}"/>`);
+  labels.forEach((l,i)=>{
+    const y0=pt+i*rowH+4;
+    out+=`<text x="${pl-10}" y="${y0+(rowH-8)/2+4}" font-size="11.5" font-weight="700" fill="${C.navy}" text-anchor="end">${l}</text>`;
+    series.forEach((s,k)=>{const v=s.data[i],yy=y0+k*bh,col=s.colors?s.colors[i]:s.color; out+=`<rect x="${pl}" y="${yy}" width="${Math.max(1,x(v)-pl)}" height="${bh-2}" rx="3" fill="${col}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x(v)+5}" y="${yy+bh/2+3}" font-size="10.5" font-weight="700" fill="${col}">${fmt(v)}</text>`;});
+    if(annot) out+=`<text x="${W-2}" y="${y0+(rowH-8)/2+4}" font-size="10.5" font-weight="700" fill="${C.amber}" text-anchor="end">${annot[i]}</text>`;
+  });
+  const svg=$(id); svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML=out;
+}
+
+/* heatmap in house blue scale */
+function heat(id,rows,cols,data,fmt){
+  const flat=data.flat(),mn=Math.min(...flat),mx=Math.max(...flat);
+  const stops=[[238,244,253],[157,189,240],[37,99,235],[13,42,94]];
+  const col=v=>{const t=(v-mn)/((mx-mn)||1),s=Math.min(2.999,t*3),i=Math.floor(s),f=s-i;return [0,1,2].map(k=>Math.round(stops[i][k]+(stops[i+1][k]-stops[i][k])*f));};
+  let html=`<div></div>`+cols.map(c=>`<div class="hc">${c}</div>`).join("");
+  rows.forEach((r,ri)=>{html+=`<div class="hl">${r}</div>`;cols.forEach((c,ci)=>{const v=data[ri][ci],[R,G,B]=col(v),lum=(0.299*R+0.587*G+0.114*B)/255;html+=`<div class="cell ${lum<0.55?"dk":""}" style="background:rgb(${R},${G},${B})" title="${r} · ${c}: ${fmt(v)}">${fmt(v)}</div>`;});});
+  const el=$(id); el.style.gridTemplateColumns=`auto repeat(${cols.length},1fr)`; el.innerHTML=html;
+}
+
+/* effort vs value bubbles */
+function bubble(id,o){
+  const {items,xMax=5,yMax,yLabel,fmt}=o;
+  const W=640,H=310,pl=54,pr=20,pt=24,pb=58;
+  const my=yMax||niceMax(Math.max(...items.map(i=>i.value||0))*1.15);
+  const x=v=>pl+v/xMax*(W-pl-pr), y=v=>pt+(1-v/my)*(H-pt-pb); let out="";
+  ticks(my).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  [1,2,3,4].forEach(t=>out+=`<text x="${x(t)}" y="${H-pb+20}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${t}</text>`);
+  out+=`<text x="${W-pr}" y="${H-6}" font-size="10.5" fill="${C.mut}" text-anchor="end">implementation effort →</text><text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  // "do now" corner
+  out+=`<rect x="${x(0)}" y="${y(my)}" width="${x(2)-x(0)}" height="${y(my*0.4)-y(my)}" fill="rgba(14,138,109,.06)"/><text x="${x(0.1)}" y="${y(my)+14}" font-size="10.5" font-weight="700" fill="${C.teal}">DO NOW · low effort, high value</text>`;
+  items.forEach(it=>{
+    const on=it.on!==false, r=10+it.conf/100*14, cx=x(it.effort), cy=y(it.value||my*0.035);
+    const fill=it.value?(on?C.blue:"#c9d6ea"):"#fff", stroke=it.value?(on?C.navy:"#c9d6ea"):C.mut;
+    out+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" fill-opacity="${it.value?.85:1}" stroke="${stroke}" stroke-width="1.5" ${it.value?"":'stroke-dasharray="3 3"'}><title>${it.k} ${it.name}: ${it.value?fmt(it.value):"risk / enabler"} · confidence ${it.conf}%</title></circle>`;
+    out+=`<text x="${cx}" y="${cy+4}" font-size="10.5" font-weight="800" fill="${it.value&&on?"#fff":C.navy}" text-anchor="middle">${it.k}</text>`;
+    let tx=cx+r+6, ty=cy+4, anchor="start";
+    if(it.labelPos==="above"){tx=cx;ty=cy-r-6;anchor="middle";}
+    else if(it.labelPos==="left"||tx>W-150){tx=cx-r-6;anchor="end";}
+    out+=`<text x="${tx}" y="${ty}" font-size="10.5" fill="${on?C.ink:C.mut}" text-anchor="${anchor}">${it.short}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* waterfall */
+function waterfall(id,o){
+  const {steps,totalLabel,fmt,unit=""}=o;
+  const W=640,H=275,pl=50,pr=14,pt=28,pb=58;
+  const tot=sum(steps.map(s=>s.v)), yMax=niceMax(tot*1.12)||1, y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const all=[...steps,{l:totalLabel,v:tot,total:true}], n=all.length, bw=(W-pl-pr)/n, barW=bw*0.6; let run=0,out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  out+=`<text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${unit}</text>`;
+  all.forEach((s,i)=>{
+    const x=pl+i*bw+(bw-barW)/2; let top,bot;
+    if(s.total){top=y(s.v);bot=y(0);} else {top=y(run+s.v);bot=y(run);run+=s.v;}
+    out+=`<rect x="${x}" y="${top}" width="${barW}" height="${Math.max(1.5,bot-top)}" rx="3" fill="${s.total?C.navy:(s.color||C.blue)}" ${s.soft?'fill-opacity=".55"':""}><title>${s.l}: ${fmt(s.v)}</title></rect>`;
+    out+=`<text x="${x+barW/2}" y="${top-6}" font-size="11" font-weight="700" fill="${s.total?C.navy:(s.color||C.blue)}" text-anchor="middle">${s.total?fmt(s.v):"+"+fmt(s.v)}</text>`;
+    if(!s.total&&i<n-1){const nx=pl+(i+1)*bw+(bw-barW)/2;out+=`<line x1="${x+barW}" x2="${nx}" y1="${y(run)}" y2="${y(run)}" stroke="#b9c7dc" stroke-dasharray="3 3"/>`;}
+    const w=s.l.split(" "), half=Math.ceil(w.length/2);
+    out+=`<text x="${x+barW/2}" y="${H-pb+18}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(0,half).join(" ")}</text><text x="${x+barW/2}" y="${H-pb+31}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(half).join(" ")}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* move cards with toggles -> callback */
+function renderMoves(id,moves,onChange){
+  $(id).innerHTML=moves.map(m=>`
+    <div class="move ${m.on?"on":""} ${m.value?"":"na"}" data-k="${m.k}" ${m.value?'role="button" tabindex="0" aria-pressed="'+m.on+'"':""}>
+      <div class="top"><span class="code">MOVE ${m.k}</span>${m.value?'<span class="tick" aria-hidden="true">'+(m.on?"✓":"")+'</span>':'<span class="code" style="color:var(--soft)">'+m.tag+'</span>'}</div>
+      <h3>${m.name}</h3>
+      <div class="val">${m.value?`<span class="v">+${m.fmt(m.value)} / yr</span>`:`<span class="r">${m.tag}</span>`}<span>Effort: ${m.effortLabel}</span>${m.extra?`<span>${m.extra}</span>`:""}<span>Confidence ${m.conf}%</span></div>
+      <p>${m.why}</p>
+      <div class="how"><b>How:</b> ${m.how}</div>
+    </div>`).join("");
+  const el=$(id);
+  const toggle=card=>{const m=moves.find(x=>x.k===card.dataset.k); if(!m.value) return; m.on=!m.on; onChange();};
+  el.addEventListener("click",e=>{const c=e.target.closest(".move"); if(c) toggle(c);});
+  el.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const c=e.target.closest(".move"); if(c){e.preventDefault();toggle(c);}});
+}
+
+/* ---------- assumptions ---------- */
+const IN=[
+  {k:"price", l:"Purchase price",  s:"$ millions",            min:30, max:60,  step:0.5, v:42.0, fmt:v=>"$"+v.toFixed(1)+"M"},
+  {k:"noi",   l:"In-place NOI",    s:"$ millions, year 1",    min:1.8,max:3.6, step:0.01,v:2.73, fmt:v=>"$"+v.toFixed(2)+"M"},
+  {k:"g",     l:"NOI growth",      s:"% per year",            min:-2, max:6,   step:0.25,v:3.0,  fmt:v=>v.toFixed(2)+"%"},
+  {k:"ltv",   l:"Loan-to-value",   s:"% of price",            min:0,  max:70,  step:1,   v:55,   fmt:v=>v+"%"},
+  {k:"rate",  l:"Interest rate",   s:"% all-in, interest only",min:3.5,max:8,  step:0.05,v:5.75, fmt:v=>v.toFixed(2)+"%"},
+  {k:"hold",  l:"Hold period",     s:"years",                 min:3,  max:7,   step:1,   v:5,    fmt:v=>v+" yrs"},
+  {k:"exit",  l:"Exit cap rate",   s:"% on forward NOI",      min:5,  max:8.5, step:0.05,v:6.75, fmt:v=>v.toFixed(2)+"%"},
+  {k:"capex", l:"Capex reserve",   s:"% of NOI per year",     min:0,  max:15,  step:0.5, v:5,    fmt:v=>v+"%"}
+];
+const CONST={acqCost:1.0, sellCost:1.5, covLTV:60, covDSCR:1.25};
+const PRESETS={base:{price:42,noi:2.73,g:3,ltv:55,rate:5.75,hold:5,exit:6.75,capex:5},down:{price:42,noi:2.73,g:1,ltv:55,rate:6.5,hold:5,exit:7.5,capex:7},agg:{price:42,noi:2.73,g:4.5,ltv:65,rate:5.5,hold:5,exit:6.0,capex:3}};
+const A=Object.fromEntries(IN.map(i=>[i.k,i.v]));
+const k$=v=>(v<0?"(":"")+"$"+Math.abs(Math.round(v)).toLocaleString()+(v<0?")":"");
+const pc=(v,d=1)=>v.toFixed(d)+"%";
+
+/* ---------- model ($ thousands) ---------- */
+function model(a){
+  const price=a.price*1000, noi1=a.noi*1000, loan=price*a.ltv/100, costs=price*CONST.acqCost/100;
+  const equity=price+costs-loan, interest=loan*a.rate/100;
+  const yrs=[]; let noi=noi1;
+  for(let y=1;y<=a.hold;y++){
+    if(y>1) noi*=1+a.g/100;
+    const capex=noi*a.capex/100, cfads=noi-capex, ds=interest, lcf=cfads-ds;
+    yrs.push({y,noi,capex,cfads,ds,lcf});
+  }
+  const exitNOI=noi*(1+a.g/100), gross=exitNOI/(a.exit/100), sell=gross*CONST.sellCost/100, netSale=gross-sell-loan;
+  const last=yrs[yrs.length-1]; last.sale=netSale; last.total=last.lcf+netSale;
+  const levFlows=[-equity,...yrs.map(y=>y.lcf+(y.sale||0))];
+  const unlevFlows=[-(price+costs),...yrs.map((y,i)=>y.cfads+(i===yrs.length-1?gross-sell:0))];
+  const irr=flows=>{let lo=-0.99,hi=1.5;for(let i=0;i<80;i++){const mid=(lo+hi)/2;const npv=flows.reduce((s,f,t)=>s+f/Math.pow(1+mid,t),0);if(npv>0)lo=mid;else hi=mid;}return (lo+hi)/2*100;};
+  const distributed=sum(yrs.map(y=>y.lcf))+netSale;
+  return {price,noi1,loan,costs,equity,interest,yrs,exitNOI,gross,sell,netSale,
+    levIRR:irr(levFlows),unlevIRR:irr(unlevFlows),em:distributed/equity,coc:yrs[0].lcf/equity*100,
+    dscr:yrs[0].cfads/interest,dy:noi1/loan*100,capIn:noi1/price*100,cfSum:sum(yrs.map(y=>y.lcf)),distributed};
+}
+
+/* ---------- rendering ---------- */
+function renderInputs(){
+  $("ins").innerHTML=IN.map(i=>`<div class="in"><label for="n-${i.k}">${i.l}<small>${i.s}</small></label><input id="n-${i.k}" type="number" min="${i.min}" max="${i.max}" step="${i.step}" value="${A[i.k]}" data-k="${i.k}"><input type="range" min="${i.min}" max="${i.max}" step="${i.step}" value="${A[i.k]}" data-k="${i.k}" aria-label="${i.l}"></div>`).join("");
+}
+function renderAll(){
+  const M=model(A);
+  const covOK=A.ltv<=CONST.covLTV, dscrOK=M.dscr>=CONST.covDSCR;
+  $("kpis").innerHTML=`
+    <div class="kpi"><div class="l">Levered IRR</div><div class="v ${M.levIRR<8?"bad":M.levIRR>=14?"good":""}">${pc(M.levIRR)}</div><div class="d">unlevered ${pc(M.unlevIRR)}</div></div>
+    <div class="kpi"><div class="l">Equity multiple</div><div class="v">${M.em.toFixed(2)}x</div><div class="d">${k$(M.distributed)} back on ${k$(M.equity)}</div></div>
+    <div class="kpi"><div class="l">Year-1 cash-on-cash</div><div class="v">${pc(M.coc)}</div><div class="d">after capex reserve and interest</div></div>
+    <div class="kpi"><div class="l">DSCR, year 1</div><div class="v ${dscrOK?"":"bad"}">${M.dscr.toFixed(2)}x</div><div class="d">covenant ${CONST.covDSCR.toFixed(2)}x</div></div>
+    <div class="kpi"><div class="l">Entry cap · exit cap</div><div class="v">${pc(M.capIn,2)}<span style="font-size:13px;color:var(--soft)"> → </span>${pc(A.exit,2)}</div><div class="d">${A.exit<M.capIn?"compression assumed":A.exit>M.capIn?"+"+((A.exit-M.capIn)*100).toFixed(0)+" bps widening assumed":"flat"}</div></div>`;
+  const flags=[];
+  if(A.exit<M.capIn) flags.push(["bad",`Exit cap ${pc(A.exit,2)} is tighter than entry ${pc(M.capIn,2)}; ${((M.capIn-A.exit)*100).toFixed(0)} bps of compression is carrying return`]);
+  if(A.g>3.5) flags.push(["warn",`NOI growth ${pc(A.g,2)} is above the 3.0–3.5% market range for this sub-sector`]);
+  if(!dscrOK) flags.push(["bad",`DSCR ${M.dscr.toFixed(2)}x breaches the ${CONST.covDSCR}x covenant from day one`]); else if(M.dscr<1.4) flags.push(["warn",`DSCR ${M.dscr.toFixed(2)}x leaves thin headroom over the ${CONST.covDSCR}x covenant`]);
+  if(!covOK) flags.push(["bad",`LTV ${A.ltv}% exceeds the ${CONST.covLTV}% covenant`]);
+  if(M.dy<8) flags.push(["warn",`Debt yield ${pc(M.dy)} is below the 8% lender floor for this asset class`]);
+  if(A.rate>M.capIn+0.5&&A.ltv>0) flags.push(["warn",`Negative leverage: debt at ${pc(A.rate,2)} costs more than the ${pc(M.capIn,2)} yield it finances`]);
+  const sens=(()=>{const base=M.levIRR, d=model({...A,exit:A.exit+0.5,g:A.g-1}).levIRR; return base-d;})();
+  if(flags.length===0) flags.push(["ok","No assumption flags; the case does not depend on compression, above-market growth or covenant headroom"]);
+  $("flags").innerHTML=flags.map(f=>`<span class="flag ${f[0]}">${f[0]==="ok"?"✓":"⚑"} ${f[1]}</span>`).join("")+`<span class="flag ${sens>6?"warn":"ok"}">Stress: +50 bps exit cap and −1 pt growth takes IRR to ${pc(M.levIRR-sens)}</span>`;
+  $("su").innerHTML=`<div class="r"><span>Purchase price</span><b>${k$(M.price)}</b></div><div class="r"><span>Acquisition costs (${CONST.acqCost}%)</span><b>${k$(M.costs)}</b></div><div class="r tot"><span>Total uses</span><b>${k$(M.price+M.costs)}</b></div>
+    <div class="r"><span>Senior loan (${A.ltv}% LTV)</span><b>${k$(M.loan)}</b></div><div class="r"><span>Equity</span><b>${k$(M.equity)}</b></div><div class="r tot"><span>Total sources</span><b>${k$(M.loan+M.equity)}</b></div>`;
+  $("dm").innerHTML=`<div class="r"><span>Loan-to-value<small>covenant ≤ ${CONST.covLTV}%</small></span><b class="${covOK?"ok":"bad"}">${A.ltv}%</b></div>
+    <div class="r"><span>Debt service cover, year 1<small>covenant ≥ ${CONST.covDSCR}x</small></span><b class="${dscrOK?(M.dscr<1.4?"warn":"ok"):"bad"}">${M.dscr.toFixed(2)}x</b></div>
+    <div class="r"><span>Debt yield<small>lender floor 8%</small></span><b class="${M.dy>=8?"ok":"warn"}">${pc(M.dy)}</b></div>
+    <div class="r"><span>Annual interest<small>interest only, ${pc(A.rate,2)}</small></span><b>${k$(M.interest)}</b></div>
+    <div class="r"><span>Leverage effect<small>levered − unlevered IRR</small></span><b class="${M.levIRR>=M.unlevIRR?"ok":"bad"}">${(M.levIRR-M.unlevIRR>=0?"+":"")+(M.levIRR-M.unlevIRR).toFixed(1)} pts</b></div>`;
+  const Y=M.yrs; const td=(v,cls="")=>`<td class="${v<0?"neg "+cls:cls}">${k$(v)}</td>`;
+  $("cf").innerHTML=`<thead><tr><th></th>${Y.map(y=>`<th>Year ${y.y}</th>`).join("")}<th>Total</th></tr></thead><tbody>
+    <tr><td>Net operating income</td>${Y.map(y=>td(y.noi)).join("")}<td>${k$(sum(Y.map(y=>y.noi)))}</td></tr>
+    <tr class="sub"><td>Capex reserve</td>${Y.map(y=>td(-y.capex)).join("")}<td class="neg">${k$(-sum(Y.map(y=>y.capex)))}</td></tr>
+    <tr class="sub"><td>Debt service</td>${Y.map(y=>td(-y.ds)).join("")}<td class="neg">${k$(-sum(Y.map(y=>y.ds)))}</td></tr>
+    <tr><td>Levered cash flow</td>${Y.map(y=>td(y.lcf)).join("")}<td>${k$(M.cfSum)}</td></tr>
+    <tr class="sub"><td>Net sale proceeds after loan</td>${Y.map(y=>`<td>${y.sale?k$(y.sale):""}</td>`).join("")}<td>${k$(M.netSale)}</td></tr>
+    <tr class="tot"><td>Total to equity</td>${Y.map(y=>td(y.lcf+(y.sale||0))).join("")}<td>${k$(M.distributed)}</td></tr></tbody>`;
+  // sensitivity
+  const exits=[A.exit-0.5,A.exit-0.25,A.exit,A.exit+0.25,A.exit+0.5], gs=[A.g-2,A.g-1,A.g,A.g+1,A.g+2];
+  const grid=exits.map(e=>gs.map(g=>model({...A,exit:e,g}).levIRR)); const flat=grid.flat(),mn=Math.min(...flat),mx=Math.max(...flat);
+  const col=v=>{const t=(v-mn)/((mx-mn)||1); const stops=[[250,236,232],[238,244,253],[157,189,240],[37,99,235],[13,42,94]]; const s=Math.min(3.999,t*4),i=Math.floor(s),f=s-i; return [0,1,2].map(k=>Math.round(stops[i][k]+(stops[i+1][k]-stops[i][k])*f));};
+  let h=`<div></div>${gs.map(g=>`<div class="h">${pc(g,2)} growth</div>`).join("")}`;
+  exits.forEach((e,ri)=>{h+=`<div class="rl">${pc(e,2)} exit</div>`;gs.forEach((g,ci)=>{const v=grid[ri][ci],[R,G,Bc]=col(v),lum=(0.299*R+0.587*G+0.114*Bc)/255;h+=`<div class="c ${lum<0.55?"dk":""} ${ri===2&&ci===2?"base":""}" style="background:rgb(${R},${G},${Bc})" title="Exit ${pc(e,2)} · growth ${pc(g,2)}: ${pc(v)} IRR">${pc(v)}</div>`;});});
+  $("sens").innerHTML=h;
+  // attribution waterfall
+  const steps=[{l:"Operating cash flow",v:M.cfSum,color:C.blue},{l:"Sale proceeds, net of loan",v:M.netSale,color:C.teal}];
+  const W=640,H=260,pl=60,pr=14,pt=26,pb=48; const maxV=niceMax(Math.max(M.equity,M.distributed)*1.1), y=v=>pt+(1-v/maxV)*(H-pt-pb);
+  const cols=[{l:"Equity invested",v:M.equity,total:true,color:C.navy},...steps,{l:"Total returned",v:M.distributed,total:true,color:C.navy}];
+  const bw=(W-pl-pr)/cols.length,barW=bw*0.56; let out=""; let run=0;
+  ticks(maxV).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">$${fmtK(t)}</text>`);
+  cols.forEach((c,i)=>{const x=pl+i*bw+(bw-barW)/2;let top,bot;if(c.total){top=y(c.v);bot=y(0);run=i===0?0:run;}else{top=y(run+c.v);bot=y(run);run+=c.v;}
+    out+=`<rect x="${x}" y="${top}" width="${barW}" height="${Math.max(1.5,bot-top)}" rx="3" fill="${c.color}"/><text x="${x+barW/2}" y="${top-6}" font-size="11" font-weight="700" fill="${c.color}" text-anchor="middle">${c.total?k$(c.v):"+"+k$(c.v)}</text>`;
+    const w=c.l.split(" "),half=Math.ceil(w.length/2);out+=`<text x="${x+barW/2}" y="${H-pb+18}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(0,half).join(" ")}</text><text x="${x+barW/2}" y="${H-pb+31}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(half).join(" ")}</text>`;});
+  out+=`<text x="${W-pr}" y="${pt-10}" font-size="11" font-weight="700" fill="${C.navy}" text-anchor="end">${M.em.toFixed(2)}x equity multiple</text>`;
+  $("attr").innerHTML=out;
+}
+function setVal(k,v){const i=IN.find(x=>x.k===k);A[k]=Math.min(i.max,Math.max(i.min,+v));document.querySelectorAll(`[data-k="${k}"]`).forEach(el=>el.value=A[k]);}
+$("ins").addEventListener("input",e=>{const el=e.target;if(!el.dataset.k)return;setVal(el.dataset.k,el.value);renderAll();});
+document.querySelector(".presets").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const p=PRESETS[b.dataset.p];Object.keys(p).forEach(k=>setVal(k,p[k]));renderAll();});
+renderInputs(); renderAll();
+
+</script>
+<script>if(new URLSearchParams(location.search).get("embed")==="1"||/^aq-embed/.test(window.name)){document.documentElement.classList.add("aq-embed");}</script>
+</body>
+</html>

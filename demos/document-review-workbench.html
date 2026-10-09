@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Document review workbench | AssetQuant</title>
+<meta name="description" content="Interactive demonstration: AI-extracted fields from a lease, a loan agreement and an insurance certificate with confidence scores, source passages and human accept, correct or reject decisions.">
+<style>
+:root{
+  --navy:#0d2a5e; --blue:#2563eb; --lblue:#9dbdf0; --ink:#33415c; --soft:#64748b;
+  --mist:#f3f7fd; --line:#e2e9f4; --white:#fff;
+  --teal:#0e8a6d; --tealbg:#e5f4ef; --red:#b3402a; --redbg:#faece8; --amber:#b45309; --amberbg:#fdf4e0; --gold:#e7b12e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--white);line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:800;font-size:18px;color:var(--navy)}
+.brand span{color:var(--blue)}
+.back{font-size:13.5px;font-weight:500;color:var(--blue)}
+.back:hover{text-decoration:underline}
+.head{padding:44px 0 18px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.kicker{display:block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1{font-size:clamp(26px,3.6vw,38px);color:var(--navy);letter-spacing:-.02em;font-weight:800;line-height:1.1}
+h1 em{font-style:normal;color:var(--blue)}
+.sub{margin-top:8px;color:var(--soft);font-size:15px;max-width:68ch}
+.pill{font-size:12px;font-weight:600;color:#7a5a12;background:var(--amberbg);border:1px solid #f3e0b3;border-radius:999px;padding:6px 12px;white-space:nowrap}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:10px 0 14px}
+.kpi{background:var(--mist);border-radius:12px;padding:15px 16px}
+.kpi .l{font-size:12px;color:var(--soft);font-weight:500}
+.kpi .v{font-size:25px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:11.5px;font-weight:600;margin-top:2px;color:var(--soft)}
+.good{color:var(--teal)!important} .bad{color:var(--red)!important} .warn{color:var(--amber)!important}
+.headline{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 18px;font-size:14px;color:var(--ink);line-height:1.6}
+.headline b{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px}
+.steps span{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);display:inline-flex;align-items:center;gap:8px}
+.steps span b{width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:10.5px;display:inline-flex;align-items:center;justify-content:center}
+.steps span:not(:last-child):after{content:"→";color:#b9c7dc;margin-left:6px}
+
+.section{margin-top:30px}
+.sec-h{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sec-h h2{font-size:19px;color:var(--navy);font-weight:800;letter-spacing:-.01em}
+.sec-h h2 small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:3px}
+.sec-h .hint{font-size:12.5px;color:var(--soft)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid2 .span2{grid-column:1/-1}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--white);display:flex;flex-direction:column}
+.panel-in{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.panel h3{font-size:15px;color:var(--navy);font-weight:700;line-height:1.3}
+.panel .hint{font-size:12px;color:var(--soft);margin-top:-6px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--soft);font-weight:600}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.sw.ln{width:16px;height:3px;border-radius:2px}
+.sw.navy{background:var(--navy)} .sw.blue{background:var(--blue)} .sw.lblue{background:var(--lblue)} .sw.gold{background:var(--gold)} .sw.red{background:var(--red)}
+.scroll-x{overflow-x:auto}
+.guard .how-inline{display:inline;font-size:13px}
+svg text{font-family:inherit}
+.chart{width:100%;height:auto;display:block}
+.insight{margin-top:auto;border-left:3px solid var(--gold);background:#fffaf0;border-radius:0 10px 10px 0;padding:11px 13px;font-size:12.5px;color:#5c4a1e;line-height:1.55}
+.insight b{color:#3b2f10}
+.insight .arrow{color:var(--blue);font-weight:700}
+
+.heat{display:grid;gap:4px;font-size:11px}
+.heat .hc{font-weight:700;color:var(--soft);text-align:center;font-size:10.5px;padding-bottom:2px}
+.heat .hl{font-weight:700;color:var(--navy);padding-right:8px;white-space:nowrap;display:flex;align-items:center;font-size:11.5px}
+.heat .cell{border-radius:5px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.heat .cell.dk{color:#fff}
+.heat-leg{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soft);margin-top:4px}
+.heat-leg i{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#eef4fd,#9dbdf0,#2563eb,#0d2a5e)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft);font-weight:700;text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th:first-child,thead th.l{text-align:left}
+tbody td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody td:first-child,tbody td.l{text-align:left}
+tbody td:first-child{font-weight:800;color:var(--navy)}
+tbody tr:last-child td{border-bottom:none}
+.chip{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px}
+.chip.auto{background:var(--tealbg);color:var(--teal)} .chip.assist{background:#dce8fb;color:#1d4fbd} .chip.manual{background:var(--redbg);color:var(--red)}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+@media(max-width:900px){.duo{grid-template-columns:1fr}}
+.vsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px}
+.vsum .kpi{padding:12px 14px}
+.vsum .kpi .v{font-size:21px}
+
+.moves{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.move{border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;background:var(--white);position:relative;cursor:pointer;transition:.2s;display:flex;flex-direction:column;gap:8px}
+.move:hover{border-color:#b9cdf0}
+.move.on{border-color:var(--blue);box-shadow:0 10px 24px rgba(37,99,235,.10)}
+.move.na{cursor:default}
+.move .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.move .code{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--blue)}
+.move .tick{width:20px;height:20px;border-radius:6px;border:1.5px solid #c9d6ea;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:#fff;flex:none}
+.move.on .tick{background:var(--blue);border-color:var(--blue)}
+.move h3{font-size:15px;color:var(--navy);line-height:1.3}
+.move .val{display:flex;flex-wrap:wrap;gap:6px}
+.move .val span{font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--mist);color:var(--navy)}
+.move .val span.v{background:var(--tealbg);color:var(--teal)}
+.move .val span.r{background:var(--amberbg);color:var(--amber)}
+.move p{font-size:12.5px;color:var(--soft);line-height:1.55}
+.move .how{font-size:12px;color:var(--ink);border-top:1px solid var(--line);padding-top:8px;margin-top:auto}
+.move .how b{color:var(--navy)}
+.guard{border:1px solid var(--line);border-left:3px solid var(--navy);border-radius:12px;padding:15px 18px;background:var(--mist);margin-top:14px;font-size:13px;color:var(--ink)}
+.guard b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.guard small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:4px}
+.foot{border-top:1px solid var(--line);margin-top:40px;padding:20px 0 38px;font-size:12.5px;color:var(--soft)}
+.move:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.wb{display:grid;grid-template-columns:230px 1fr 300px;gap:16px;align-items:start;margin-top:14px}
+@media(max-width:1000px){.wb{grid-template-columns:1fr}}
+.docs{display:grid;gap:8px}
+.docitem{border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;background:var(--white);transition:.2s}
+.docitem:hover{border-color:#b9cdf0}
+.docitem.on{border-color:var(--blue);box-shadow:0 10px 24px rgba(37,99,235,.10)}
+.docitem .ty{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
+.docitem b{display:block;font-size:13.5px;color:var(--navy);margin:3px 0 2px;line-height:1.3}
+.docitem small{font-size:11px;color:var(--soft)}
+.docitem .bar{margin-top:8px;height:5px;border-radius:3px;background:#e9eef7;overflow:hidden}
+.docitem .bar i{display:block;height:100%;background:var(--teal);transition:width .3s}
+.fields{border:1px solid var(--line);border-radius:14px;background:var(--white);overflow:hidden}
+.fields-h{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.fields-h h3{font-size:15px;color:var(--navy)}
+.thr{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft);font-weight:600}
+.thr input{width:140px;accent-color:var(--blue)}
+.thr output{font-weight:800;color:var(--navy);min-width:36px;text-align:right}
+.ft td:nth-child(2){text-align:left;font-weight:600;color:var(--navy);white-space:normal;min-width:160px}
+.ft td:first-child{font-weight:700;color:var(--ink);white-space:normal}
+.ft td:first-child small{display:block;font-size:10.5px;color:var(--soft);font-weight:500}
+.ft tbody tr{cursor:pointer}
+.ft tbody tr:hover{background:var(--mist)}
+.ft tbody tr.sel{background:#eaf1fe;box-shadow:inset 3px 0 0 var(--blue)}
+.conf{display:inline-flex;align-items:center;gap:7px;justify-content:flex-end}
+.conf .track{width:56px;height:6px;border-radius:3px;background:#e9eef7;overflow:hidden}
+.conf .track i{display:block;height:100%;border-radius:3px}
+.conf b{min-width:30px;text-align:right}
+.st{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 8px;white-space:nowrap}
+.st.auto{background:var(--tealbg);color:var(--teal)} .st.hold{background:var(--amberbg);color:var(--amber)} .st.acc{background:#dce8fb;color:#1d4fbd} .st.cor{background:#efe6fb;color:#6836b3} .st.rej{background:var(--redbg);color:var(--red)} .st.always{background:#e9eef7;color:var(--soft)}
+.acts{display:inline-flex;gap:5px}
+.acts button{font:inherit;font-size:11px;font-weight:700;border-radius:999px;padding:4px 9px;cursor:pointer;border:1px solid var(--line);background:var(--white);color:var(--navy)}
+.acts button:hover{border-color:var(--blue)}
+.acts button.a{color:var(--teal)} .acts button.r{color:var(--red)}
+.acts button:disabled{opacity:.45;cursor:default}
+.ft input.edit{font:inherit;font-size:12.5px;padding:4px 7px;border:1px solid var(--blue);border-radius:6px;width:150px}
+.src{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--white);position:sticky;top:16px;font-size:12.5px}
+.src h4{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:8px}
+.src .muted{color:var(--soft)}
+.src .page{font-size:11px;color:var(--soft);margin-bottom:8px}
+.src .passage{font-family:Georgia,"Times New Roman",serif;font-size:13px;line-height:1.65;color:#2b3a55;background:#fbfbf7;border:1px solid #ece9dd;border-radius:8px;padding:12px 13px}
+.src .passage mark{background:#fff0a8;color:#1b2540;padding:0 2px;border-radius:2px}
+.src dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin-top:10px}
+.src dt{color:var(--soft);font-weight:600}
+.src dd{color:var(--navy);font-weight:600}
+.dlog{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.65;color:var(--ink);max-height:220px;overflow:auto;background:var(--mist);border-radius:10px;padding:10px 12px}
+.dlog .muted{color:var(--soft);font-family:inherit}
+.dlog div span{color:var(--soft);margin-right:8px}
+.rules{display:grid;gap:8px}
+.rules div{font-size:12.5px;color:var(--soft);line-height:1.5;padding:9px 12px;background:var(--mist);border-radius:9px}
+.rules b{display:block;color:var(--navy);font-size:12.5px;margin-bottom:1px}
+
+.mt18{margin-top:18px}
+
+</style>
+
+<style>.aq-demo-disclosure{max-width:1140px;margin:16px auto 0;padding:11px 16px;border:1px solid #c9daf0;background:#f3f8ff;color:#405b80;border-radius:8px;font:12px/1.5 Arial,sans-serif;display:flex;gap:10px;align-items:flex-start}.aq-demo-disclosure strong{color:#071b54;white-space:nowrap}.aq-demo-disclosure span{flex:1}@media(max-width:700px){.aq-demo-disclosure{margin:12px 14px 0;display:block}.aq-demo-disclosure strong{display:block;margin-bottom:3px;white-space:normal}}</style>
+
+<style>
+/* V58.1 — canonical AssetQuant lockup on internal demo pages */
+.brand-lockup{display:inline-flex!important;align-items:center!important;gap:8px!important;color:#0d2a5e!important;font-weight:800!important;text-decoration:none!important}
+.brand-lockup img{display:block;width:54px;height:34px;object-fit:contain;flex:none}
+.brand-lockup .brand-wordmark{color:#0d2a5e!important;font-size:18px;line-height:1;letter-spacing:-.025em}
+@media(max-width:640px){.brand-lockup{gap:6px!important}.brand-lockup img{width:46px;height:30px}.brand-lockup .brand-wordmark{font-size:16px}}
+</style>
+<style>html.aq-embed .aq-demo-disclosure,html.aq-embed .topbar{display:none!important}html.aq-embed .head{padding-top:26px}</style>
+</head>
+<body>
+<div class="aq-demo-disclosure" role="note"><strong>Illustrative demonstration · Synthetic data</strong><span>Organisations, transactions, documents, figures and outcomes shown here are fictional or modelled for demonstration purposes. No client, bank or confidential data is used. Results are illustrative, not actual client outcomes or professional advice.</span></div>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand brand-lockup" href="../index.html#capabilities" aria-label="AssetQuant home"><img src="../assets/logo-approved-aq.png" alt="AQ"><span class="brand-wordmark">AssetQuant</span></a>
+  <a class="back" href="../index.html#capabilities">← Back to AssetQuant</a>
+</div></div>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <span class="kicker">AI &amp; intelligent automation · Interactive demo</span>
+      <h1>Extraction by the model. <em>Judgement by a person.</em></h1>
+      <p class="sub">A review session: three documents from a property acquisition, an office lease, a loan agreement and an insurance certificate, read by the model, with every extracted field carrying a confidence score and the exact source passage. High-confidence fields are pre-accepted; everything else waits for a reviewer. Nothing enters the data room without a human decision on record.</p>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="wb">
+    <aside class="docs" id="docs" aria-label="Documents in this batch"></aside>
+    <section class="fields">
+      <div class="fields-h"><h3 id="doc-title">Document</h3><div class="thr"><label for="thr">Auto-accept at</label><input id="thr" type="range" min="80" max="99" value="92"><output id="thr-out">92%</output></div></div>
+      <div class="scroll-x"><table class="ft" id="ft"><thead><tr><th>Field</th><th>Extracted value</th><th>Confidence</th><th>Status</th><th>Review</th></tr></thead><tbody></tbody></table></div>
+    </section>
+    <aside class="src" id="src" aria-live="polite" aria-label="Source passage"><h4>Source passage</h4><p class="muted">Select a field to see the passage it was read from.</p></aside>
+  </div>
+
+  <section class="duo mt18">
+    <div class="panel"><div class="panel-in">
+      <h3>Decision log</h3><p class="hint">Every accept, correction and rejection is attributed and timestamped</p>
+      <div class="dlog" id="dlog"><div class="muted">No reviewer actions yet.</div></div>
+    </div></div>
+    <div class="panel"><div class="panel-in">
+      <h3>How the threshold works</h3><p class="hint">The slider above is the governance control</p>
+      <div class="rules">
+        <div><b>At or above threshold</b>Pre-accepted by the model. Still visible, still reversible, still logged; the reviewer can override any of them.</div>
+        <div><b>Below threshold</b>Held for review. The reviewer accepts, corrects in place, or rejects. The model's value is never written without that decision.</div>
+        <div><b>Always held</b>Monetary amounts above $1M and any date that drives a deadline, regardless of confidence. Some fields are too consequential to automate.</div>
+      </div>
+    </div></div>
+  </section>
+</div>
+
+
+<script>
+/* ---------- house palette + helpers ---------- */
+const C={navy:"#0d2a5e",blue:"#2563eb",lblue:"#9dbdf0",teal:"#0e8a6d",red:"#b3402a",amber:"#b45309",gold:"#e7b12e",grid:"#eef2f9",mut:"#64748b",ink:"#33415c",pale:"#c8d9f5"};
+const $=id=>document.getElementById(id);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v||1)));const n=v/p;const steps=[1,1.2,1.5,2,2.5,3,4,5,6,8,10];const m=steps.find(x=>n<=x);return m*p;}
+function ticks(max,n=4){const out=[];for(let i=0;i<=n;i++)out.push(max*i/n);return out;}
+const fmtK=v=>v>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":String(Math.round(v));
+
+/* bars (left axis) + optional line (right axis) */
+function combo(id,o){
+  const {labels,bars,line,barColor=C.navy,barColors,lineColor=C.blue,yLabel="",y1Label="",y1Max,y1Min=0,everyLabel=1,barFmt=v=>v,lineFmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=line?46:14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...bars)*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,bw=(W-pl-pr)/n,barW=bw*0.6; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  bars.forEach((v,i)=>{const x=pl+i*bw+(bw-barW)/2; out+=`<rect x="${x}" y="${y(v)}" width="${barW}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${barColors?barColors[i]:barColor}"><title>${labels[i]}: ${barFmt(v)}</title></rect>`;});
+  labels.forEach((l,i)=>{ if(i%everyLabel===0) out+=`<text x="${pl+i*bw+bw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;});
+  if(line){
+    const lMax=y1Max||niceMax(Math.max(...line)*1.1), lMin=y1Min, y1=v=>pt+(1-(v-lMin)/(lMax-lMin))*(H-pt-pb);
+    ticks(lMax).forEach(t=>out+=`<text x="${W-pr+7}" y="${y1(t)+4}" font-size="10.5" fill="${C.mut}">${+t.toFixed(2)}</text>`);
+    if(y1Label) out+=`<text x="${W-2}" y="${pt-5}" font-size="10" fill="${C.mut}" text-anchor="end">${y1Label}</text>`;
+    const pts=line.map((v,i)=>`${pl+i*bw+bw/2},${y1(v)}`).join(" ");
+    out+=`<polyline fill="none" stroke="${lineColor}" stroke-width="2.4" stroke-linejoin="round" points="${pts}"/>`;
+    line.forEach((v,i)=>out+=`<circle cx="${pl+i*bw+bw/2}" cy="${y1(v)}" r="3.2" fill="#fff" stroke="${lineColor}" stroke-width="2"><title>${labels[i]}: ${lineFmt(v)}</title></circle>`);
+  }
+  $(id).innerHTML=out;
+}
+
+/* vertical grouped bars */
+function grouped(id,o){
+  const {labels,series,yLabel="",fmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...series.flatMap(s=>s.data))*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,gw=(W-pl-pr)/n,inner=gw*0.68,bw=inner/series.length; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  labels.forEach((l,i)=>{
+    series.forEach((s,k)=>{const v=s.data[i], x=pl+i*gw+(gw-inner)/2+k*bw; out+=`<rect x="${x+1}" y="${y(v)}" width="${bw-2}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${s.color}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x+bw/2}" y="${y(v)-5}" font-size="10" font-weight="700" fill="${s.color}" text-anchor="middle">${fmt(v)}</text>`;});
+    out+=`<text x="${pl+i*gw+gw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* horizontal bars, single or grouped; optional per-row annotation */
+function hbars(id,o){
+  const {labels,series,xMax,fmt=v=>v,annot,rowH=34,labelW=150}=o;
+  const W=640,pl=labelW,pr=annot?112:70,pt=8;
+  const H=pt+labels.length*rowH+12;
+  const mx=xMax||niceMax(Math.max(...series.flatMap(s=>s.data))*1.1), x=v=>pl+v/mx*(W-pl-pr);
+  const bh=(rowH-8)/series.length; let out="";
+  ticks(mx).forEach(t=>out+=`<line x1="${x(t)}" x2="${x(t)}" y1="${pt}" y2="${H-10}" stroke="${C.grid}"/>`);
+  labels.forEach((l,i)=>{
+    const y0=pt+i*rowH+4;
+    out+=`<text x="${pl-10}" y="${y0+(rowH-8)/2+4}" font-size="11.5" font-weight="700" fill="${C.navy}" text-anchor="end">${l}</text>`;
+    series.forEach((s,k)=>{const v=s.data[i],yy=y0+k*bh,col=s.colors?s.colors[i]:s.color; out+=`<rect x="${pl}" y="${yy}" width="${Math.max(1,x(v)-pl)}" height="${bh-2}" rx="3" fill="${col}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x(v)+5}" y="${yy+bh/2+3}" font-size="10.5" font-weight="700" fill="${col}">${fmt(v)}</text>`;});
+    if(annot) out+=`<text x="${W-2}" y="${y0+(rowH-8)/2+4}" font-size="10.5" font-weight="700" fill="${C.amber}" text-anchor="end">${annot[i]}</text>`;
+  });
+  const svg=$(id); svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML=out;
+}
+
+/* heatmap in house blue scale */
+function heat(id,rows,cols,data,fmt){
+  const flat=data.flat(),mn=Math.min(...flat),mx=Math.max(...flat);
+  const stops=[[238,244,253],[157,189,240],[37,99,235],[13,42,94]];
+  const col=v=>{const t=(v-mn)/((mx-mn)||1),s=Math.min(2.999,t*3),i=Math.floor(s),f=s-i;return [0,1,2].map(k=>Math.round(stops[i][k]+(stops[i+1][k]-stops[i][k])*f));};
+  let html=`<div></div>`+cols.map(c=>`<div class="hc">${c}</div>`).join("");
+  rows.forEach((r,ri)=>{html+=`<div class="hl">${r}</div>`;cols.forEach((c,ci)=>{const v=data[ri][ci],[R,G,B]=col(v),lum=(0.299*R+0.587*G+0.114*B)/255;html+=`<div class="cell ${lum<0.55?"dk":""}" style="background:rgb(${R},${G},${B})" title="${r} · ${c}: ${fmt(v)}">${fmt(v)}</div>`;});});
+  const el=$(id); el.style.gridTemplateColumns=`auto repeat(${cols.length},1fr)`; el.innerHTML=html;
+}
+
+/* effort vs value bubbles */
+function bubble(id,o){
+  const {items,xMax=5,yMax,yLabel,fmt}=o;
+  const W=640,H=310,pl=54,pr=20,pt=24,pb=58;
+  const my=yMax||niceMax(Math.max(...items.map(i=>i.value||0))*1.15);
+  const x=v=>pl+v/xMax*(W-pl-pr), y=v=>pt+(1-v/my)*(H-pt-pb); let out="";
+  ticks(my).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  [1,2,3,4].forEach(t=>out+=`<text x="${x(t)}" y="${H-pb+20}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${t}</text>`);
+  out+=`<text x="${W-pr}" y="${H-6}" font-size="10.5" fill="${C.mut}" text-anchor="end">implementation effort →</text><text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  // "do now" corner
+  out+=`<rect x="${x(0)}" y="${y(my)}" width="${x(2)-x(0)}" height="${y(my*0.4)-y(my)}" fill="rgba(14,138,109,.06)"/><text x="${x(0.1)}" y="${y(my)+14}" font-size="10.5" font-weight="700" fill="${C.teal}">DO NOW · low effort, high value</text>`;
+  items.forEach(it=>{
+    const on=it.on!==false, r=10+it.conf/100*14, cx=x(it.effort), cy=y(it.value||my*0.035);
+    const fill=it.value?(on?C.blue:"#c9d6ea"):"#fff", stroke=it.value?(on?C.navy:"#c9d6ea"):C.mut;
+    out+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" fill-opacity="${it.value?.85:1}" stroke="${stroke}" stroke-width="1.5" ${it.value?"":'stroke-dasharray="3 3"'}><title>${it.k} ${it.name}: ${it.value?fmt(it.value):"risk / enabler"} · confidence ${it.conf}%</title></circle>`;
+    out+=`<text x="${cx}" y="${cy+4}" font-size="10.5" font-weight="800" fill="${it.value&&on?"#fff":C.navy}" text-anchor="middle">${it.k}</text>`;
+    let tx=cx+r+6, ty=cy+4, anchor="start";
+    if(it.labelPos==="above"){tx=cx;ty=cy-r-6;anchor="middle";}
+    else if(it.labelPos==="left"||tx>W-150){tx=cx-r-6;anchor="end";}
+    out+=`<text x="${tx}" y="${ty}" font-size="10.5" fill="${on?C.ink:C.mut}" text-anchor="${anchor}">${it.short}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* waterfall */
+function waterfall(id,o){
+  const {steps,totalLabel,fmt,unit=""}=o;
+  const W=640,H=275,pl=50,pr=14,pt=28,pb=58;
+  const tot=sum(steps.map(s=>s.v)), yMax=niceMax(tot*1.12)||1, y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const all=[...steps,{l:totalLabel,v:tot,total:true}], n=all.length, bw=(W-pl-pr)/n, barW=bw*0.6; let run=0,out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  out+=`<text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${unit}</text>`;
+  all.forEach((s,i)=>{
+    const x=pl+i*bw+(bw-barW)/2; let top,bot;
+    if(s.total){top=y(s.v);bot=y(0);} else {top=y(run+s.v);bot=y(run);run+=s.v;}
+    out+=`<rect x="${x}" y="${top}" width="${barW}" height="${Math.max(1.5,bot-top)}" rx="3" fill="${s.total?C.navy:(s.color||C.blue)}" ${s.soft?'fill-opacity=".55"':""}><title>${s.l}: ${fmt(s.v)}</title></rect>`;
+    out+=`<text x="${x+barW/2}" y="${top-6}" font-size="11" font-weight="700" fill="${s.total?C.navy:(s.color||C.blue)}" text-anchor="middle">${s.total?fmt(s.v):"+"+fmt(s.v)}</text>`;
+    if(!s.total&&i<n-1){const nx=pl+(i+1)*bw+(bw-barW)/2;out+=`<line x1="${x+barW}" x2="${nx}" y1="${y(run)}" y2="${y(run)}" stroke="#b9c7dc" stroke-dasharray="3 3"/>`;}
+    const w=s.l.split(" "), half=Math.ceil(w.length/2);
+    out+=`<text x="${x+barW/2}" y="${H-pb+18}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(0,half).join(" ")}</text><text x="${x+barW/2}" y="${H-pb+31}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(half).join(" ")}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* move cards with toggles -> callback */
+function renderMoves(id,moves,onChange){
+  $(id).innerHTML=moves.map(m=>`
+    <div class="move ${m.on?"on":""} ${m.value?"":"na"}" data-k="${m.k}" ${m.value?'role="button" tabindex="0" aria-pressed="'+m.on+'"':""}>
+      <div class="top"><span class="code">MOVE ${m.k}</span>${m.value?'<span class="tick" aria-hidden="true">'+(m.on?"✓":"")+'</span>':'<span class="code" style="color:var(--soft)">'+m.tag+'</span>'}</div>
+      <h3>${m.name}</h3>
+      <div class="val">${m.value?`<span class="v">+${m.fmt(m.value)} / yr</span>`:`<span class="r">${m.tag}</span>`}<span>Effort: ${m.effortLabel}</span>${m.extra?`<span>${m.extra}</span>`:""}<span>Confidence ${m.conf}%</span></div>
+      <p>${m.why}</p>
+      <div class="how"><b>How:</b> ${m.how}</div>
+    </div>`).join("");
+  const el=$(id);
+  const toggle=card=>{const m=moves.find(x=>x.k===card.dataset.k); if(!m.value) return; m.on=!m.on; onChange();};
+  el.addEventListener("click",e=>{const c=e.target.closest(".move"); if(c) toggle(c);});
+  el.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const c=e.target.closest(".move"); if(c){e.preventDefault();toggle(c);}});
+}
+
+/* ---------- sample documents ---------- */
+const DOCS=[
+ {k:"lease",ty:"Office lease",name:"Lease: Levels 4–6, 18 Quayside Avenue",pages:42,fields:[
+  {k:"tenant",l:"Tenant",v:"Halvorsen Analytics Ltd",c:98,p:1,pass:"THIS LEASE is made between Quayside Holdings LP (the \"Landlord\") and <mark>Halvorsen Analytics Ltd</mark> (the \"Tenant\") in respect of the Premises described in Schedule 1."},
+  {k:"premises",l:"Premises",sub:"net lettable area",v:"3,420 sq m",c:96,p:1,pass:"The Premises comprise Levels 4, 5 and 6 of the Building having an aggregate net lettable area of <mark>3,420 square metres</mark>, together with 24 car-parking bays."},
+  {k:"term",l:"Term",v:"10 years from 1 Jan 2027",c:95,p:3,pass:"The Term shall be <mark>ten (10) years commencing on 1 January 2027</mark> and expiring on 31 December 2036 unless sooner determined."},
+  {k:"rent",l:"Commencing annual rent",v:"$2,394,000",c:97,p:5,always:true,pass:"The Tenant shall pay the Landlord annual rent of <mark>$2,394,000</mark> (being $700 per square metre) by equal monthly instalments in advance."},
+  {k:"review",l:"Rent review",sub:"mechanism & dates",v:"Fixed 3.5% annually",c:88,p:6,pass:"On each anniversary of the Commencement Date the Rent shall increase by <mark>three and one-half per cent (3.5%)</mark> of the Rent payable immediately before that date, save that on the fifth anniversary the Rent shall be reviewed to market."},
+  {k:"break",l:"Break option",v:"None",c:71,p:9,pass:"Nothing in this Lease confers on the Tenant a right to determine the Lease before the Expiry Date, <mark>save as provided in clause 14.3</mark> (Landlord's redevelopment)."},
+  {k:"option",l:"Option to renew",v:"1 × 5 years",c:93,p:10,pass:"The Tenant shall have <mark>one (1) option to renew the Lease for a further term of five (5) years</mark>, exercisable by notice given not less than 9 and not more than 12 months before the Expiry Date."},
+  {k:"incent",l:"Incentive",sub:"rent-free & fit-out",v:"8 months rent-free; $1.2M fit-out",c:84,p:12,always:true,pass:"The Landlord grants the Tenant a rent-free period of <mark>eight (8) months</mark> from the Commencement Date and a fit-out contribution of up to <mark>$1,200,000</mark> payable against certified invoices."},
+  {k:"guarantee",l:"Security",v:"Bank guarantee, 6 months' rent",c:90,p:15,pass:"The Tenant shall deliver a bank guarantee in an amount equal to <mark>six (6) months' Rent plus GST</mark>, to be adjusted on each rent review."},
+  {k:"outgoings",l:"Outgoings",v:"Net lease; tenant pays proportion",c:79,p:17,pass:"The Tenant shall pay the Tenant's Proportion of Outgoings, being <mark>the proportion that the net lettable area of the Premises bears to the net lettable area of the Building</mark>, currently 28.6%."}
+ ]},
+ {k:"loan",ty:"Loan agreement",name:"Facility agreement: Quayside acquisition",pages:118,fields:[
+  {k:"borrower",l:"Borrower",v:"Quayside Holdings LP",c:99,p:1,pass:"between <mark>Quayside Holdings LP</mark> as borrower (the \"Borrower\") and Meridian Commercial Bank as lender (the \"Lender\")."},
+  {k:"amount",l:"Facility amount",v:"$38,500,000",c:97,p:2,always:true,pass:"The Lender agrees to make available a term loan facility in an aggregate amount not exceeding <mark>$38,500,000</mark> (the \"Facility\")."},
+  {k:"margin",l:"Margin",v:"1.85% over base rate",c:94,p:14,pass:"Interest shall accrue at the aggregate of the Base Rate and a margin of <mark>1.85 per cent per annum</mark>, payable quarterly in arrear."},
+  {k:"maturity",l:"Maturity date",v:"15 Mar 2031",c:91,p:3,always:true,pass:"\"Termination Date\" means <mark>15 March 2031</mark>, or if that day is not a Business Day, the preceding Business Day."},
+  {k:"ltv",l:"LTV covenant",v:"≤ 60%",c:95,p:41,pass:"The Borrower shall ensure that the Loan to Value Ratio does not at any time exceed <mark>60 per cent</mark>."},
+  {k:"icr",l:"Interest cover covenant",v:"≥ 1.75x",c:86,p:41,pass:"The Borrower shall ensure that the Interest Cover Ratio is not less than <mark>1.75:1</mark> on each Test Date, <mark>provided that</mark> for the first two Test Dates the ratio shall be 1.50:1."},
+  {k:"amort",l:"Amortisation",v:"None (interest only)",c:68,p:16,pass:"No scheduled repayment of principal shall be required before the Termination Date <mark>other than pursuant to clause 8.4 (cash sweep)</mark>."},
+  {k:"prepay",l:"Prepayment fee",v:"1.0% in year 1, nil after",c:74,p:18,pass:"Voluntary prepayment within twelve months of the Utilisation Date shall be subject to a fee of <mark>1.0 per cent of the amount prepaid</mark>; thereafter, break costs only."},
+  {k:"security",l:"Security",v:"First mortgage; GSA; assignment of leases",c:92,p:55,pass:"The Facility shall be secured by <mark>a first-ranking registered mortgage</mark> over the Property, a general security agreement, and an assignment of leases and rental income."}
+ ]},
+ {k:"ins",ty:"Insurance certificate",name:"Certificate of currency: property and liability",pages:3,fields:[
+  {k:"insured",l:"Insured",v:"Quayside Holdings LP",c:99,p:1,pass:"Named Insured: <mark>Quayside Holdings LP</mark> and its subsidiaries and interested parties as noted."},
+  {k:"insurer",l:"Insurer",v:"Northbridge Mutual",c:98,p:1,pass:"Insurer: <mark>Northbridge Mutual Insurance Society</mark>, policy number PRP-4471-2026."},
+  {k:"sum",l:"Sum insured (building)",v:"$54,000,000",c:96,p:1,always:true,pass:"Section 1: Industrial Special Risks. Sum insured (buildings): <mark>$54,000,000</mark>; contents: $2,500,000; business interruption: 24 months."},
+  {k:"period",l:"Period of insurance",v:"1 Jul 2026 – 30 Jun 2027",c:97,p:1,always:true,pass:"Period of insurance: from 4:00pm <mark>1 July 2026</mark> to 4:00pm <mark>30 June 2027</mark>."},
+  {k:"liab",l:"Public liability limit",v:"$20,000,000",c:95,p:2,pass:"Section 2: Public and Products Liability. Limit of liability: <mark>$20,000,000</mark> any one occurrence."},
+  {k:"excess",l:"Excess",v:"$25,000 per claim",c:82,p:2,pass:"Deductible: <mark>$25,000 each and every claim</mark>, except water damage $50,000."},
+  {k:"interest",l:"Mortgagee noted",v:"Yes, Meridian Commercial Bank",c:77,p:3,pass:"Interested parties: <mark>Meridian Commercial Bank</mark> is noted as mortgagee <mark>for its respective rights and interests</mark>."}
+ ]}
+];
+let threshold=92, doc=DOCS[0], sel=null; const LOG=[];
+const ALWAYS_LIMIT=1000000;
+DOCS.forEach(d=>d.fields.forEach(f=>{f.dec=null;f.orig=f.v;}));
+
+function status(f){ if(f.dec) return f.dec; if(f.always) return "always"; return f.c>=threshold?"auto":"hold"; }
+const STL={auto:"Pre-accepted",hold:"Held for review",always:"Always held",acc:"Accepted",cor:"Corrected",rej:"Rejected"};
+const all=()=>DOCS.flatMap(d=>d.fields);
+function renderKpis(){
+  const A=all(); const auto=A.filter(f=>status(f)==="auto").length; const decided=A.filter(f=>f.dec).length;
+  const held=A.filter(f=>["hold","always"].includes(status(f))).length;
+  const mins=auto*1.8+decided*0.6; // vs ~2.5 min manual per field
+  const manual=A.length*2.5;
+  $("kpis").innerHTML=`
+    <div class="kpi"><div class="l">Fields extracted</div><div class="v">${A.length}</div><div class="d">across ${DOCS.length} documents · ${sum(DOCS.map(d=>d.pages))} pages</div></div>
+    <div class="kpi"><div class="l">Pre-accepted by model</div><div class="v">${Math.round(auto/A.length*100)}%</div><div class="d">at ≥ ${threshold}% confidence</div></div>
+    <div class="kpi"><div class="l">Awaiting a reviewer</div><div class="v ${held?"warn":"good"}">${held}</div><div class="d">${A.filter(f=>status(f)==="always").length} always-held items included</div></div>
+    <div class="kpi"><div class="l">Reviewer decisions logged</div><div class="v">${decided}</div><div class="d">accept · correct · reject</div></div>
+    <div class="kpi"><div class="l">Review time, this batch</div><div class="v">${Math.round(mins)} min</div><div class="d good">vs ~${Math.round(manual)} min manual abstraction</div></div>`;
+}
+function renderDocs(){
+  $("docs").innerHTML=DOCS.map(d=>{const done=d.fields.filter(f=>["auto","acc","cor","rej"].includes(status(f))).length;
+    return `<div class="docitem ${d===doc?"on":""}" data-k="${d.k}" role="button" tabindex="0" aria-pressed="${d===doc}"><div class="ty">${d.ty}</div><b>${d.name}</b><small>${d.pages} pages · ${d.fields.length} fields · ${done} settled</small><div class="bar"><i style="width:${done/d.fields.length*100}%"></i></div></div>`;}).join("");
+}
+function renderFields(){
+  $("doc-title").textContent=doc.name;
+  $("ft").querySelector("tbody").innerHTML=doc.fields.map(f=>{const st=status(f); const col=f.c>=threshold?"#0e8a6d":f.c>=75?"#2563eb":"#b45309";
+    return `<tr data-f="${f.k}" class="${sel===f.k?"sel":""}"><td>${f.l}${f.sub?`<small>${f.sub}</small>`:""}</td><td>${f.editing?`<input class="edit" value="${f.v}" aria-label="Correct value">`:f.v}${f.dec==="cor"?` <span style="font-size:10.5px;color:var(--soft)">(was ${f.orig})</span>`:""}</td>
+      <td><span class="conf"><span class="track"><i style="width:${f.c}%;background:${col}"></i></span><b>${f.c}%</b></span></td>
+      <td><span class="st ${st}">${STL[st]}</span></td>
+      <td><span class="acts">${f.editing?`<button data-a="save">Save</button><button data-a="cancel">Cancel</button>`:`<button class="a" data-a="acc" ${f.dec==="acc"?"disabled":""}>Accept</button><button data-a="edit">Correct</button><button class="r" data-a="rej" ${f.dec==="rej"?"disabled":""}>Reject</button>`}</span></td></tr>`;}).join("");
+}
+function renderSrc(){
+  const f=doc.fields.find(x=>x.k===sel); const el=$("src");
+  if(!f){el.innerHTML=`<h4>Source passage</h4><p class="muted">Select a field to see the passage it was read from.</p>`;return;}
+  el.innerHTML=`<h4>Source passage</h4><div class="page">${doc.ty} · page ${f.p} of ${doc.pages}</div><div class="passage">${f.pass}</div>
+    <dl><dt>Field</dt><dd>${f.l}</dd><dt>Model read</dt><dd>${f.orig}</dd><dt>Confidence</dt><dd>${f.c}%</dd><dt>Status</dt><dd>${STL[status(f)]}</dd>${f.always?`<dt>Why held</dt><dd>Consequential amount or deadline; always a human decision</dd>`:f.c<threshold&&!f.dec?`<dt>Why held</dt><dd>${f.c}% is below the ${threshold}% threshold${f.c<80?", qualifying language in the passage":""}</dd>`:""}</dl>`;
+}
+function renderLog(){const el=$("dlog"); el.innerHTML=LOG.length?LOG.slice().reverse().map(l=>`<div><span>${l.t}</span>${l.m}</div>`).join(""):`<div class="muted">No reviewer actions yet.</div>`;}
+function renderAll(){renderKpis();renderDocs();renderFields();renderSrc();renderLog();}
+const stamp=()=>{const d=new Date();return d.toTimeString().slice(0,8);};
+function act(f,a,val){
+  if(a==="acc"){f.dec="acc";LOG.push({t:stamp(),m:`Accepted ${doc.ty} · ${f.l} = "${f.v}" (model ${f.c}%), by reviewer`});}
+  if(a==="rej"){f.dec="rej";LOG.push({t:stamp(),m:`Rejected ${doc.ty} · ${f.l}; model read "${f.orig}" (${f.c}%), by reviewer`});}
+  if(a==="save"){const nv=val.trim(); if(nv&&nv!==f.v){f.v=nv;f.dec="cor";LOG.push({t:stamp(),m:`Corrected ${doc.ty} · ${f.l}: "${f.orig}" → "${nv}", by reviewer`});} f.editing=false;}
+  if(a==="cancel"){f.editing=false;}
+  if(a==="edit"){doc.fields.forEach(x=>x.editing=false);f.editing=true;}
+}
+$("docs").addEventListener("click",e=>{const d=e.target.closest(".docitem");if(!d)return;doc=DOCS.find(x=>x.k===d.dataset.k);sel=null;renderAll();});
+$("docs").addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const d=e.target.closest(".docitem");if(!d)return;e.preventDefault();doc=DOCS.find(x=>x.k===d.dataset.k);sel=null;renderAll();});
+$("ft").addEventListener("click",e=>{
+  const tr=e.target.closest("tr[data-f]"); if(!tr) return; const f=doc.fields.find(x=>x.k===tr.dataset.f);
+  const b=e.target.closest("button[data-a]");
+  if(b){const inp=tr.querySelector("input.edit");act(f,b.dataset.a,inp?inp.value:"");sel=f.k;renderAll();return;}
+  if(e.target.tagName==="INPUT") return;
+  sel=f.k;renderFields();renderSrc();
+});
+$("ft").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList.contains("edit")){const tr=e.target.closest("tr");const f=doc.fields.find(x=>x.k===tr.dataset.f);act(f,"save",e.target.value);renderAll();}});
+$("thr").addEventListener("input",e=>{threshold=+e.target.value;$("thr-out").textContent=threshold+"%";renderAll();});
+renderAll();
+
+</script>
+<script>if(new URLSearchParams(location.search).get("embed")==="1"||/^aq-embed/.test(window.name)){document.documentElement.classList.add("aq-embed");}</script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Performance &amp; forecast cockpit | AssetQuant</title>
+<meta name="description" content="Interactive demonstration of financial and business analytics: budget variance bridge, product-line performance, a driver-based forecast with sensitivity analysis and management insight written from the numbers.">
+<style>
+:root{
+  --navy:#0d2a5e; --blue:#2563eb; --ink:#33415c; --soft:#64748b;
+  --mist:#f3f7fd; --line:#e2e9f4; --white:#fff;
+  --teal:#0e8a6d; --tealbg:#e5f4ef; --red:#b3402a; --redbg:#faece8; --amber:#b45309; --amberbg:#fdf4e0; --gold:#e7b12e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--white);line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:800;font-size:18px;color:var(--navy)}
+.brand span{color:var(--blue)}
+.back{font-size:13.5px;font-weight:500;color:var(--blue)}
+.back:hover{text-decoration:underline}
+.head{padding:44px 0 18px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.kicker{display:block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1{font-size:clamp(26px,3.6vw,38px);color:var(--navy);letter-spacing:-.02em;font-weight:800;line-height:1.1}
+.sub{margin-top:8px;color:var(--soft);font-size:15px;max-width:66ch}
+.pill{font-size:12px;font-weight:600;color:#7a5a12;background:var(--amberbg);border:1px solid #f3e0b3;border-radius:999px;padding:6px 12px;white-space:nowrap}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:10px 0 6px}
+.kpi{background:var(--mist);border-radius:12px;padding:15px 16px}
+.kpi .l{font-size:12px;color:var(--soft);font-weight:500}
+.kpi .v{font-size:25px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:11.5px;font-weight:600;margin-top:2px;color:var(--soft)}
+.good{color:var(--teal)!important} .bad{color:var(--red)!important} .warn{color:var(--amber)!important}
+
+.section{margin-top:30px}
+.sec-h{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sec-h h2{font-size:19px;color:var(--navy);font-weight:800;letter-spacing:-.01em}
+.sec-h h2 small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:3px}
+.sec-h .hint{font-size:12.5px;color:var(--soft)}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--white)}
+.panel-in{padding:18px 20px 20px}
+.duo{display:grid;grid-template-columns:7fr 5fr;gap:20px;align-items:stretch}
+.duo.rev{grid-template-columns:5fr 7fr}
+@media(max-width:960px){.duo,.duo.rev{grid-template-columns:1fr}}
+.scroll-x{overflow-x:auto}
+.vartable-wrap{margin-top:14px}
+svg text{font-family:inherit}
+.chart{width:100%;height:auto;display:block}
+
+.callout{border-left:3px solid var(--gold);background:#fffaf0;border-radius:0 10px 10px 0;padding:12px 14px;font-size:13px;color:#5c4a1e}
+.callout b{color:#3b2f10}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft);font-weight:700;text-align:right;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th:first-child{text-align:left}
+tbody td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody td:first-child{text-align:left;font-weight:700;color:var(--navy)}
+tfoot td{padding:10px 12px;text-align:right;font-weight:800;color:var(--navy);background:var(--mist);font-variant-numeric:tabular-nums}
+tfoot td:first-child{text-align:left}
+.flag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.flag.red{background:var(--redbg);color:var(--red)} .flag.amber{background:var(--amberbg);color:var(--amber)} .flag.green{background:var(--tealbg);color:var(--teal)}
+.spark{vertical-align:middle}
+
+.drivers{display:grid;gap:12px}
+.dr{display:grid;grid-template-columns:150px 1fr 64px;gap:12px;align-items:center;font-size:13px}
+.dr label{font-weight:600;color:var(--navy)}
+.dr label small{display:block;font-size:11px;color:var(--soft);font-weight:500}
+.dr input{width:100%;accent-color:var(--blue)}
+.dr output{font-weight:800;color:var(--navy);text-align:right;font-variant-numeric:tabular-nums}
+.drnote{margin-top:12px;font-size:11.5px;color:var(--soft);line-height:1.5}
+.fsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.fsum .kpi{padding:12px 14px}
+.fsum .kpi .v{font-size:21px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11.5px;color:var(--soft);font-weight:600;margin-bottom:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:3px;border-radius:2px;background:var(--navy)}
+.sw.f{background:var(--blue)} .sw.b{background:#cfe0fb;height:8px} .sw.p{background:var(--gold)}
+
+.insights{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.ins{border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:var(--white);border-top:3px solid var(--blue)}
+.ins.red{border-top-color:var(--red)} .ins.green{border-top-color:var(--teal)} .ins.amber{border-top-color:var(--gold)}
+.ins small{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)}
+.ins b{display:block;color:var(--navy);font-size:14.5px;margin:5px 0 5px;line-height:1.3}
+.ins p{font-size:12.5px;color:var(--soft);line-height:1.5}
+.foot{border-top:1px solid var(--line);margin-top:40px;padding:20px 0 38px;font-size:12.5px;color:var(--soft)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media(max-width:760px){.dr{grid-template-columns:120px 1fr 54px}}
+</style>
+
+<style>.aq-demo-disclosure{max-width:1140px;margin:16px auto 0;padding:11px 16px;border:1px solid #c9daf0;background:#f3f8ff;color:#405b80;border-radius:8px;font:12px/1.5 Arial,sans-serif;display:flex;gap:10px;align-items:flex-start}.aq-demo-disclosure strong{color:#071b54;white-space:nowrap}.aq-demo-disclosure span{flex:1}@media(max-width:700px){.aq-demo-disclosure{margin:12px 14px 0;display:block}.aq-demo-disclosure strong{display:block;margin-bottom:3px;white-space:normal}}</style>
+
+<style>
+/* V58.1 — canonical AssetQuant lockup on internal demo pages */
+.brand-lockup{display:inline-flex!important;align-items:center!important;gap:8px!important;color:#0d2a5e!important;font-weight:800!important;text-decoration:none!important}
+.brand-lockup img{display:block;width:54px;height:34px;object-fit:contain;flex:none}
+.brand-lockup .brand-wordmark{color:#0d2a5e!important;font-size:18px;line-height:1;letter-spacing:-.025em}
+@media(max-width:640px){.brand-lockup{gap:6px!important}.brand-lockup img{width:46px;height:30px}.brand-lockup .brand-wordmark{font-size:16px}}
+</style>
+<style>html.aq-embed .aq-demo-disclosure,html.aq-embed .topbar{display:none!important}html.aq-embed .head{padding-top:26px}</style>
+</head>
+<body>
+<div class="aq-demo-disclosure" role="note"><strong>Illustrative demonstration · Synthetic data</strong><span>Organisations, transactions, documents, figures and outcomes shown here are fictional or modelled for demonstration purposes. No client, bank or confidential data is used. Results are illustrative, not actual client outcomes or professional advice.</span></div>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand brand-lockup" href="../index.html#capabilities" aria-label="AssetQuant home"><img src="../assets/logo-approved-aq.png" alt="AQ"><span class="brand-wordmark">AssetQuant</span></a>
+  <a class="back" href="../index.html#capabilities">← Back to AssetQuant</a>
+</div></div>
+
+<div class="wrap">
+  <header class="head">
+    <div>
+      <span class="kicker">Financial &amp; business analytics · Interactive demo</span>
+      <h1>Performance &amp; forecast cockpit</h1>
+      <p class="sub">A specialty-foods manufacturer has just closed FY26 (October 2025 – September 2026). Revenue beat budget; EBITDA missed it. This is the working view we build for a finance leader: what actually happened, where, and what next year looks like as you change the drivers.</p>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+
+  <!-- 1 · VARIANCE -->
+  <section class="section">
+    <div class="sec-h"><h2><small>1 · Performance vs budget</small>Revenue beat. Margin missed. Why?</h2><span class="hint">FY26 EBITDA bridge, budget → actual, $M</span></div>
+    <div class="duo">
+      <div class="panel"><div class="panel-in">
+        <svg class="chart" id="bridge" viewBox="0 0 700 300" role="img" aria-label="Waterfall chart: FY26 EBITDA from budget to actual by variance driver"></svg>
+      </div></div>
+      <div class="panel"><div class="panel-in">
+        <div class="callout" id="bridge-note"></div>
+        <div class="scroll-x vartable-wrap"><table id="vartable"><thead><tr><th>Variance driver</th><th>$M</th><th>Share of miss</th></tr></thead><tbody></tbody></table></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 2 · PRODUCT LINES -->
+  <section class="section">
+    <div class="sec-h"><h2><small>2 · Where it happened</small>Product-line performance</h2><span class="hint">FY26 · flags raised automatically when gross margin trails budget by more than 1.5 points</span></div>
+    <div class="panel"><div class="scroll-x"><table id="lines">
+      <thead><tr><th>Product line</th><th>Revenue</th><th>vs LY</th><th>Gross margin</th><th>vs budget</th><th>Contribution</th><th>Monthly trend</th></tr></thead>
+      <tbody></tbody><tfoot></tfoot>
+    </table></div></div>
+  </section>
+
+  <!-- 3 · FORECAST -->
+  <section class="section">
+    <div class="sec-h"><h2><small>3 · What next year looks like</small>Driver-based FY27 forecast</h2><span class="hint">Move the drivers · the forecast, sensitivity and insight rebuild</span></div>
+    <div class="duo rev">
+      <div class="panel"><div class="panel-in">
+        <div class="drivers" id="drivers"></div>
+        <p class="drnote">Price action carries a volume penalty (elasticity −0.4: each 1% of price costs 0.4% of volume). Materials are 58% of cost of goods and take the input-cost driver; the remaining 42% is labour and overhead, inflating at 2.5%.</p>
+      </div></div>
+      <div class="panel"><div class="panel-in">
+        <div class="fsum" id="fsum"></div>
+        <div class="legend"><span><span class="sw"></span>FY26 actual EBITDA</span><span><span class="sw f"></span>FY27 forecast</span><span><span class="sw b"></span>uncertainty band</span><span><span class="sw p"></span>FY27 plan</span></div>
+        <svg class="chart" id="fchart" viewBox="0 0 760 270" role="img" aria-label="Line chart: monthly EBITDA, FY26 actual and FY27 forecast with uncertainty band and plan line"></svg>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 4 · SENSITIVITY -->
+  <section class="section">
+    <div class="sec-h"><h2><small>4 · What matters most</small>EBITDA sensitivity</h2><span class="hint">Each bar re-runs the forecast with one driver moved · $M change in FY27 EBITDA</span></div>
+    <div class="panel"><div class="panel-in">
+      <svg class="chart" id="tornado" viewBox="0 0 900 230" role="img" aria-label="Tornado chart: FY27 EBITDA sensitivity to each driver"></svg>
+    </div></div>
+  </section>
+
+  <!-- 5 · INSIGHT -->
+  <section class="section">
+    <div class="sec-h"><h2><small>5 · Management insight</small>What the pack should say</h2><span class="hint">Written by the page from the numbers above</span></div>
+    <div class="insights" id="insights"></div>
+  </section>
+</div>
+
+
+<script>
+// ---------- FY26 base data ($M) ----------
+const M = ["Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"];
+const REV = [7.4,7.1,8.9,7.0,7.3,8.2,8.0,8.4,8.6,8.3,8.5,8.6];
+const EBITDA = [0.70,0.63,1.18,0.60,0.69,0.93,0.86,0.97,1.03,0.95,1.00,1.03];
+const BUD_REV = 95.8, BUD_EBITDA = 11.5, BUD_GM = 0.315;
+const LY_REV = 89.6;
+const VAR = [  // budget -> actual EBITDA bridge
+  {l:"Volume", v:+1.1}, {l:"Price", v:+0.5}, {l:"Mix", v:-0.4}, {l:"Input costs", v:-1.7},
+  {l:"Labour", v:-0.6}, {l:"Freight", v:-0.4}, {l:"Opex savings", v:+0.4}, {l:"FX", v:+0.2}
+];
+const LINES = [
+  {n:"Sauces & condiments", rev:31.2, ly:29.3, gm:.341, bgm:.355, trend:[2.5,2.4,3.0,2.3,2.4,2.7,2.6,2.7,2.8,2.6,2.6,2.6]},
+  {n:"Snacks",               rev:24.8, ly:22.7, gm:.296, bgm:.320, trend:[1.8,1.8,2.3,1.8,1.9,2.1,2.1,2.2,2.3,2.1,2.2,2.2]},
+  {n:"Frozen meals",         rev:22.1, ly:21.8, gm:.279, bgm:.305, trend:[1.8,1.7,2.1,1.7,1.7,1.9,1.8,1.9,1.9,1.8,1.9,1.9]},
+  {n:"Private label",        rev:18.2, ly:16.1, gm:.254, bgm:.250, trend:[1.3,1.2,1.5,1.2,1.3,1.5,1.5,1.6,1.6,1.8,1.8,1.9]}
+];
+const DRV = [
+  {k:"vol",   l:"Volume growth",        s:"FY27 vs FY26",            min:-5,  max:10, v:3,   unit:"%"},
+  {k:"price", l:"Price action",         s:"average list increase",   min:0,   max:6,  v:2.5, step:.5, unit:"%"},
+  {k:"infl",  l:"Input-cost inflation", s:"materials, FY27",         min:-5,  max:15, v:6,   unit:"%"},
+  {k:"opex",  l:"Opex change",          s:"fixed overheads",         min:-5,  max:5,  v:1,   step:.5, unit:"%"}
+];
+const PLAN_FY27_EBITDA = 12.4; // the board's FY27 plan
+
+const $ = id => document.getElementById(id);
+const sum = a => a.reduce((x,y)=>x+y,0);
+const m$ = v => "$"+v.toFixed(1)+"M";
+const pct = (v,d=1) => v.toFixed(d)+"%";
+const sgn = v => (v>0?"+":"")+v.toFixed(1);
+
+// derived FY26 facts
+const revFY = sum(REV), ebFY = sum(EBITDA);
+const gmFY = sum(LINES.map(l=>l.rev*l.gm))/sum(LINES.map(l=>l.rev));
+const gmBud = sum(LINES.map(l=>l.rev*l.bgm))/sum(LINES.map(l=>l.rev));
+const gpFY = revFY*gmFY, opexFY = gpFY-ebFY;
+const MAT_SHARE = 0.58, ELAST = 0.4, OTHER_INFL = 0.025;
+
+// ---------- forecast model ----------
+function forecast(d){
+  const volEff = d.vol/100 - ELAST*d.price/100;
+  const cogsFY = revFY - gpFY;
+  const cogsFactor = (1+volEff)*(MAT_SHARE*(1+d.infl/100) + (1-MAT_SHARE)*(1+OTHER_INFL));
+  const opex = opexFY*(1+d.opex/100);
+  const rev = REV.map(r=>r*(1+volEff)*(1+d.price/100));
+  const cogs = REV.map(r=>(r*(cogsFY/revFY))*cogsFactor);
+  const op = REV.map(r=>opex*(r/revFY));            // opex spread by seasonality
+  const eb = rev.map((r,i)=>r-cogs[i]-op[i]);
+  return {rev, eb, revT:sum(rev), ebT:sum(eb), gm:(sum(rev)-sum(cogs))/sum(rev)};
+}
+const drivers = () => Object.fromEntries(DRV.map(d=>[d.k,d.v]));
+
+// ---------- KPIs ----------
+function renderKpis(){
+  const revVar=(revFY/BUD_REV-1)*100, ebVar=(ebFY/BUD_EBITDA-1)*100, gmGap=(gmFY-gmBud)*100;
+  $("kpis").innerHTML=`
+    <div class="kpi"><div class="l">Revenue FY26</div><div class="v">${m$(revFY)}</div><div class="d good">${sgn(revVar)}% vs budget · ${sgn((revFY/LY_REV-1)*100)}% vs LY</div></div>
+    <div class="kpi"><div class="l">Gross margin</div><div class="v">${pct(gmFY*100)}</div><div class="d bad">${sgn(gmGap)} pt vs budget ${pct(gmBud*100)}</div></div>
+    <div class="kpi"><div class="l">EBITDA FY26</div><div class="v">${m$(ebFY)}</div><div class="d bad">${sgn(ebVar)}% vs budget ${m$(BUD_EBITDA)}</div></div>
+    <div class="kpi"><div class="l">EBITDA margin</div><div class="v">${pct(ebFY/revFY*100)}</div><div class="d bad">budget ${pct(BUD_EBITDA/BUD_REV*100)}</div></div>
+    <div class="kpi"><div class="l">Operating expenses</div><div class="v">${m$(opexFY)}</div><div class="d good">${pct(opexFY/revFY*100)} of revenue · savings delivered</div></div>`;
+}
+
+// ---------- 1 · bridge ----------
+function drawBridge(){
+  const steps=[{l:"Budget",v:BUD_EBITDA,t:1},...VAR,{l:"Actual",v:ebFY,t:1}];
+  const W=700,H=300,pl=44,pr=14,pt=22,pb=60, minV=9.6, maxV=13.4;
+  const y=v=>pt+(maxV-v)/(maxV-minV)*(H-pt-pb);
+  const n=steps.length,bw=(W-pl-pr)/n,barW=bw*.58; let run=0,out="";
+  for(let g=10;g<=13;g++) out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(g)}" y2="${y(g)}" stroke="#eef2f9"/><text x="${pl-8}" y="${y(g)+4}" font-size="11" fill="#64748b" text-anchor="end">${g}</text>`;
+  steps.forEach((b,i)=>{
+    const x=pl+i*bw+(bw-barW)/2; let top,bot,fill;
+    if(b.t){top=y(b.v);bot=y(minV);fill="#0d2a5e";run=b.v;}
+    else{const f=run,t=run+b.v;top=y(Math.max(f,t));bot=y(Math.min(f,t));fill=b.v<0?"#b3402a":"#0e8a6d";run=t;}
+    out+=`<rect x="${x}" y="${top}" width="${barW}" height="${Math.max(2,bot-top)}" rx="3" fill="${fill}"/>`;
+    out+=`<text x="${x+barW/2}" y="${top-6}" font-size="12" font-weight="700" fill="${b.t?"#0d2a5e":fill}" text-anchor="middle">${b.t?b.v.toFixed(1):sgn(b.v)}</text>`;
+    if(i<n-1){const nx=pl+(i+1)*bw+(bw-barW)/2;out+=`<line x1="${x+barW}" x2="${nx}" y1="${y(run)}" y2="${y(run)}" stroke="#b9c7dc" stroke-dasharray="3 3"/>`;}
+    const w=b.l.split(" ");const l1=w.length>1?w[0]:b.l,l2=w.length>1?w.slice(1).join(" "):"";
+    out+=`<text x="${x+barW/2}" y="${H-pb+20}" font-size="11" fill="#33415c" text-anchor="middle">${l1}</text><text x="${x+barW/2}" y="${H-pb+34}" font-size="11" fill="#33415c" text-anchor="middle">${l2}</text>`;
+  });
+  $("bridge").innerHTML=out;
+  const neg=VAR.filter(v=>v.v<0), negT=sum(neg.map(v=>v.v)), posT=sum(VAR.filter(v=>v.v>0).map(v=>v.v));
+  const worst=[...neg].sort((a,b)=>a.v-b.v)[0];
+  $("bridge-note").innerHTML=`<b>Reading the bridge.</b> Commercial performance added ${m$(posT)} (volume and price both ahead), but cost headwinds took ${m$(-negT)}. ${worst.l} alone account for ${m$(-worst.v)}, which is ${(worst.v/negT*100).toFixed(0)}% of all adverse variance. Without it, EBITDA would have landed at ${m$(ebFY-worst.v)}, ${pct((ebFY-worst.v)/BUD_EBITDA*100-100)} ahead of budget.`;
+  $("vartable").querySelector("tbody").innerHTML=[...VAR].sort((a,b)=>a.v-b.v).map(v=>`<tr><td>${v.l}</td><td class="${v.v<0?"bad":"good"}">${sgn(v.v)}</td><td>${v.v<0?(v.v/negT*100).toFixed(0)+"%":""}</td></tr>`).join("");
+}
+
+// ---------- 2 · product lines ----------
+function spark(a,color){
+  const w=96,h=26,mn=Math.min(...a),mx=Math.max(...a);
+  const pts=a.map((v,i)=>`${(i/(a.length-1))*w},${h-2-((v-mn)/((mx-mn)||1))*(h-4)}`).join(" ");
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round" points="${pts}"/></svg>`;
+}
+function renderLines(){
+  const totRev=sum(LINES.map(l=>l.rev)), totGp=sum(LINES.map(l=>l.rev*l.gm));
+  $("lines").querySelector("tbody").innerHTML=LINES.map(l=>{
+    const gap=(l.gm-l.bgm)*100, growth=(l.rev/l.ly-1)*100;
+    const flag=gap<=-2.5?'<span class="flag red">margin alert</span>':gap<=-1.5?'<span class="flag amber">watch</span>':gap>=0?'<span class="flag green">on plan</span>':"";
+    const col=gap<=-1.5?"#b3402a":gap>=0?"#0e8a6d":"#2563eb";
+    return `<tr><td>${l.n}${flag}</td><td>${m$(l.rev)}</td><td class="${growth>=5?"good":""}">${sgn(growth)}%</td><td>${pct(l.gm*100)}</td><td class="${gap<=-1.5?"bad":gap>=0?"good":""}">${sgn(gap)} pt</td><td>${m$(l.rev*l.gm)}<span style="color:var(--soft);font-weight:500"> · ${(l.rev*l.gm/totGp*100).toFixed(0)}%</span></td><td>${spark(l.trend,col)}</td></tr>`;
+  }).join("");
+  $("lines").querySelector("tfoot").innerHTML=`<tr><td>Total</td><td>${m$(totRev)}</td><td>${sgn((totRev/LY_REV-1)*100)}%</td><td>${pct(gmFY*100)}</td><td class="bad">${sgn((gmFY-gmBud)*100)} pt</td><td>${m$(totGp)}</td><td></td></tr>`;
+}
+
+// ---------- 3 · drivers + forecast ----------
+function renderDrivers(){
+  $("drivers").innerHTML=DRV.map(d=>`<div class="dr"><label for="d-${d.k}">${d.l}<small>${d.s}</small></label><input id="d-${d.k}" type="range" min="${d.min}" max="${d.max}" step="${d.step||1}" value="${d.v}" data-k="${d.k}" aria-label="${d.l}"><output for="d-${d.k}">${sgn(d.v)}%</output></div>`).join("");
+}
+function renderForecast(){
+  const f=forecast(drivers());
+  const vsPlan=f.ebT-PLAN_FY27_EBITDA, growth=(f.ebT/ebFY-1)*100;
+  $("fsum").innerHTML=`
+    <div class="kpi"><div class="l">FY27 revenue</div><div class="v">${m$(f.revT)}</div><div class="d ${f.revT>=revFY?"good":"bad"}">${sgn((f.revT/revFY-1)*100)}% vs FY26</div></div>
+    <div class="kpi"><div class="l">FY27 EBITDA</div><div class="v">${m$(f.ebT)}</div><div class="d ${growth>=0?"good":"bad"}">${sgn(growth)}% vs FY26</div></div>
+    <div class="kpi"><div class="l">EBITDA margin</div><div class="v">${pct(f.ebT/f.revT*100)}</div><div class="d">gross margin ${pct(f.gm*100)}</div></div>
+    <div class="kpi"><div class="l">vs FY27 plan</div><div class="v ${vsPlan>=0?"good":"bad"}">${sgn(vsPlan)}</div><div class="d">plan ${m$(PLAN_FY27_EBITDA)}</div></div>`;
+  // chart: 24 months
+  const W=760,H=270,pl=40,pr=16,pt=16,pb=42;
+  const all=[...EBITDA,...f.eb]; const band=f.eb.map((v,i)=>v*(0.04+0.012*i));
+  const minV=Math.min(0.3,Math.min(...all)-0.2), maxV=Math.max(...all.map((v,i)=>v+(i>=12?band[i-12]:0)), PLAN_FY27_EBITDA/12*1.3)+0.15;
+  const x=i=>pl+i*(W-pl-pr)/23, y=v=>pt+(maxV-v)/(maxV-minV)*(H-pt-pb);
+  let out="";
+  for(let g=0.4;g<=maxV;g+=0.4) out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(g)}" y2="${y(g)}" stroke="#eef2f9"/><text x="${pl-7}" y="${y(g)+4}" font-size="10.5" fill="#64748b" text-anchor="end">${g.toFixed(1)}</text>`;
+  [...M,...M].forEach((m,i)=>{ if(i%2===0) out+=`<text x="${x(i)}" y="${H-pb+20}" font-size="10.5" fill="#64748b" text-anchor="middle">${m}</text>`; });
+  out+=`<text x="${x(5.5)}" y="${H-8}" font-size="11" font-weight="700" fill="#0d2a5e" text-anchor="middle">FY26 actual</text><text x="${x(17.5)}" y="${H-8}" font-size="11" font-weight="700" fill="#2563eb" text-anchor="middle">FY27 forecast</text>`;
+  out+=`<line x1="${x(11.5)}" x2="${x(11.5)}" y1="${pt}" y2="${H-pb}" stroke="#b9c7dc" stroke-dasharray="4 4"/>`;
+  // plan line (seasonalised)
+  const plan=REV.map(r=>PLAN_FY27_EBITDA*(r/revFY));
+  out+=`<polyline fill="none" stroke="#e7b12e" stroke-width="1.6" stroke-dasharray="6 4" points="${plan.map((v,i)=>x(12+i)+","+y(v)).join(" ")}"/>`;
+  // band
+  const up=f.eb.map((v,i)=>x(12+i)+","+y(v+band[i])), lo=f.eb.map((v,i)=>x(12+i)+","+y(v-band[i])).reverse();
+  out+=`<polygon fill="rgba(37,99,235,.12)" points="${[...up,...lo].join(" ")}"/>`;
+  // actual + forecast lines
+  out+=`<polyline fill="none" stroke="#0d2a5e" stroke-width="2.4" stroke-linejoin="round" points="${EBITDA.map((v,i)=>x(i)+","+y(v)).join(" ")}"/>`;
+  out+=`<polyline fill="none" stroke="#2563eb" stroke-width="2.4" stroke-linejoin="round" points="${[EBITDA[11],...f.eb].map((v,i)=>x(11+i)+","+y(v)).join(" ")}"/>`;
+  out+=`<circle cx="${x(23)}" cy="${y(f.eb[11])}" r="4" fill="#fff" stroke="#2563eb" stroke-width="2"/><text x="${x(23)-8}" y="${y(f.eb[11])-10}" font-size="11" font-weight="700" fill="#2563eb" text-anchor="end">Sep FY27 ${m$(f.eb[11])}</text>`;
+  $("fchart").innerHTML=out;
+  drawTornado(f.ebT); renderInsights(f);
+}
+
+// ---------- 4 · tornado ----------
+function drawTornado(base){
+  const d=drivers();
+  const tests=[{k:"vol",l:"Volume ±3 pt",dv:3},{k:"price",l:"Price ±1 pt",dv:1},{k:"infl",l:"Input costs ±3 pt",dv:3},{k:"opex",l:"Opex ±2 pt",dv:2}];
+  const rows=tests.map(t=>{const up=forecast({...d,[t.k]:d[t.k]+t.dv}).ebT-base, dn=forecast({...d,[t.k]:d[t.k]-t.dv}).ebT-base; return {...t,up,dn,span:Math.abs(up)+Math.abs(dn)};}).sort((a,b)=>b.span-a.span);
+  const W=900,H=230,pl=150,pr=70,pt=20,rh=44; const maxAbs=Math.max(...rows.flatMap(r=>[Math.abs(r.up),Math.abs(r.dn)]))||1;
+  const cx=pl+(W-pl-pr)/2, sc=(W-pl-pr)/2/maxAbs*0.92; let out=`<line x1="${cx}" x2="${cx}" y1="${pt-6}" y2="${pt+rows.length*rh}" stroke="#b9c7dc"/>`;
+  rows.forEach((r,i)=>{
+    const yy=pt+i*rh+8;
+    const draw=(v,label)=>{const w=Math.abs(v)*sc; const xx=v>=0?cx:cx-w; const fill=v>=0?"#0e8a6d":"#b3402a";
+      out+=`<rect x="${xx}" y="${yy}" width="${Math.max(1,w)}" height="22" rx="4" fill="${fill}" opacity=".9"/>`;
+      out+=`<text x="${v>=0?xx+w+6:xx-6}" y="${yy+15}" font-size="11.5" font-weight="700" fill="${fill}" text-anchor="${v>=0?"start":"end"}">${sgn(v)} ${label}</text>`;};
+    draw(r.up,"▲"); draw(r.dn,"▼");
+    out+=`<text x="${pl-12}" y="${yy+15}" font-size="12.5" font-weight="700" fill="#0d2a5e" text-anchor="end">${r.l}</text>`;
+  });
+  out+=`<text x="${cx}" y="${pt+rows.length*rh+16}" font-size="10.5" fill="#94a3b8" text-anchor="middle">▲ driver up · ▼ driver down · relative to the current forecast of ${m$(base)}</text>`;
+  $("tornado").innerHTML=out;
+}
+
+// ---------- 5 · insights ----------
+function renderInsights(f){
+  const d=drivers();
+  const worstLine=[...LINES].sort((a,b)=>(a.gm-a.bgm)-(b.gm-b.bgm))[0];
+  const worstVar=[...VAR].sort((a,b)=>a.v-b.v)[0];
+  const fastest=[...LINES].sort((a,b)=>(b.rev/b.ly)-(a.rev/a.ly))[0];
+  const vsPlan=f.ebT-PLAN_FY27_EBITDA;
+  const priceNeeded=(()=>{ for(let p=0;p<=8;p+=0.5){ if(forecast({...d,price:p}).ebT>=PLAN_FY27_EBITDA) return p; } return null; })();
+  const cards=[
+    {c:"red",t:"Headline",b:`${worstVar.l} explain the FY26 miss`,p:`EBITDA finished ${m$(BUD_EBITDA-ebFY)} under budget despite revenue ${sgn((revFY/BUD_REV-1)*100)}% ahead. ${worstVar.l} cost ${m$(-worstVar.v)}, more than the entire miss; commercial execution was ahead of plan.`},
+    {c:"amber",t:"Where",b:`${worstLine.n} is the margin problem`,p:`Gross margin ${pct(worstLine.gm*100)} against a ${pct(worstLine.bgm*100)} budget, ${sgn((worstLine.gm-worstLine.bgm)*100)} points. ${fastest.n} grew fastest (${sgn((fastest.rev/fastest.ly-1)*100)}%) ${fastest.gm>=fastest.bgm?"and held margin":"but below budget margin"}; growth is not the issue, recovery is.`},
+    {c:vsPlan>=-0.05?"green":"amber",t:"Forecast",b:Math.abs(vsPlan)<0.05?"Current drivers land exactly on the FY27 plan":vsPlan>0?`Current drivers beat the FY27 plan by ${m$(vsPlan)}`:`Current drivers leave FY27 ${m$(-vsPlan)} short of plan`,p:vsPlan>=-0.05?`At ${sgn(d.vol)}% volume, ${sgn(d.price)}% price and ${sgn(d.infl)}% input inflation, EBITDA reaches ${m$(f.ebT)} against a ${m$(PLAN_FY27_EBITDA)} plan. The band widens through the year, so lock in H1.`:(priceNeeded!==null?`Holding other drivers, plan is reached at ${sgn(priceNeeded)}% price action (vs ${sgn(d.price)}% today), net of the volume it would cost.`:`No realistic price action closes the gap alone; it needs a cost lever as well.`)},
+    {c:"blue",t:"Decision",b:"Price and input costs dominate the sensitivity",p:`Each point of price is worth more than each point of volume once elasticity is counted, and input-cost exposure is the largest downside. The pack should carry a hedging and pass-through recommendation, not just a volume target.`}
+  ];
+  $("insights").innerHTML=cards.map(c=>`<div class="ins ${c.c}"><small>${c.t}</small><b>${c.b}</b><p>${c.p}</p></div>`).join("");
+}
+
+// ---------- events ----------
+$("drivers").addEventListener("input",e=>{const i=e.target;if(i.tagName!=="INPUT")return;const d=DRV.find(x=>x.k===i.dataset.k);d.v=+i.value;i.nextElementSibling.textContent=sgn(d.v)+"%";renderForecast();});
+
+renderKpis(); drawBridge(); renderLines(); renderDrivers(); renderForecast();
+</script>
+<script>if(new URLSearchParams(location.search).get("embed")==="1"||/^aq-embed/.test(window.name)){document.documentElement.classList.add("aq-embed");}</script>
+</body>
+</html>

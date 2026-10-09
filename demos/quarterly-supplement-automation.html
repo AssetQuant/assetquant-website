@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quarterly supplement automation | AssetQuant</title>
+<meta name="description" content="Interactive demonstration: an investor supplement populated from five source systems in one run, with provenance on every figure and a human sign-off gate.">
+<style>
+:root{
+  --navy:#0d2a5e; --blue:#2563eb; --lblue:#9dbdf0; --ink:#33415c; --soft:#64748b;
+  --mist:#f3f7fd; --line:#e2e9f4; --white:#fff;
+  --teal:#0e8a6d; --tealbg:#e5f4ef; --red:#b3402a; --redbg:#faece8; --amber:#b45309; --amberbg:#fdf4e0; --gold:#e7b12e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Schibsted Grotesk",-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--white);line-height:1.55}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:800;font-size:18px;color:var(--navy)}
+.brand span{color:var(--blue)}
+.back{font-size:13.5px;font-weight:500;color:var(--blue)}
+.back:hover{text-decoration:underline}
+.head{padding:44px 0 18px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.kicker{display:block;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1{font-size:clamp(26px,3.6vw,38px);color:var(--navy);letter-spacing:-.02em;font-weight:800;line-height:1.1}
+h1 em{font-style:normal;color:var(--blue)}
+.sub{margin-top:8px;color:var(--soft);font-size:15px;max-width:68ch}
+.pill{font-size:12px;font-weight:600;color:#7a5a12;background:var(--amberbg);border:1px solid #f3e0b3;border-radius:999px;padding:6px 12px;white-space:nowrap}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:10px 0 14px}
+.kpi{background:var(--mist);border-radius:12px;padding:15px 16px}
+.kpi .l{font-size:12px;color:var(--soft);font-weight:500}
+.kpi .v{font-size:25px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:11.5px;font-weight:600;margin-top:2px;color:var(--soft)}
+.good{color:var(--teal)!important} .bad{color:var(--red)!important} .warn{color:var(--amber)!important}
+.headline{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 18px;font-size:14px;color:var(--ink);line-height:1.6}
+.headline b{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px}
+.steps span{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);display:inline-flex;align-items:center;gap:8px}
+.steps span b{width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:10.5px;display:inline-flex;align-items:center;justify-content:center}
+.steps span:not(:last-child):after{content:"→";color:#b9c7dc;margin-left:6px}
+
+.section{margin-top:30px}
+.sec-h{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sec-h h2{font-size:19px;color:var(--navy);font-weight:800;letter-spacing:-.01em}
+.sec-h h2 small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:700;margin-bottom:3px}
+.sec-h .hint{font-size:12.5px;color:var(--soft)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid2 .span2{grid-column:1/-1}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--white);display:flex;flex-direction:column}
+.panel-in{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.panel h3{font-size:15px;color:var(--navy);font-weight:700;line-height:1.3}
+.panel .hint{font-size:12px;color:var(--soft);margin-top:-6px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--soft);font-weight:600}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.sw.ln{width:16px;height:3px;border-radius:2px}
+.sw.navy{background:var(--navy)} .sw.blue{background:var(--blue)} .sw.lblue{background:var(--lblue)} .sw.gold{background:var(--gold)} .sw.red{background:var(--red)}
+.scroll-x{overflow-x:auto}
+.guard .how-inline{display:inline;font-size:13px}
+svg text{font-family:inherit}
+.chart{width:100%;height:auto;display:block}
+.insight{margin-top:auto;border-left:3px solid var(--gold);background:#fffaf0;border-radius:0 10px 10px 0;padding:11px 13px;font-size:12.5px;color:#5c4a1e;line-height:1.55}
+.insight b{color:#3b2f10}
+.insight .arrow{color:var(--blue);font-weight:700}
+
+.heat{display:grid;gap:4px;font-size:11px}
+.heat .hc{font-weight:700;color:var(--soft);text-align:center;font-size:10.5px;padding-bottom:2px}
+.heat .hl{font-weight:700;color:var(--navy);padding-right:8px;white-space:nowrap;display:flex;align-items:center;font-size:11.5px}
+.heat .cell{border-radius:5px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.heat .cell.dk{color:#fff}
+.heat-leg{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soft);margin-top:4px}
+.heat-leg i{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#eef4fd,#9dbdf0,#2563eb,#0d2a5e)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft);font-weight:700;text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th:first-child,thead th.l{text-align:left}
+tbody td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody td:first-child,tbody td.l{text-align:left}
+tbody td:first-child{font-weight:800;color:var(--navy)}
+tbody tr:last-child td{border-bottom:none}
+.chip{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px}
+.chip.auto{background:var(--tealbg);color:var(--teal)} .chip.assist{background:#dce8fb;color:#1d4fbd} .chip.manual{background:var(--redbg);color:var(--red)}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+@media(max-width:900px){.duo{grid-template-columns:1fr}}
+.vsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px}
+.vsum .kpi{padding:12px 14px}
+.vsum .kpi .v{font-size:21px}
+
+.moves{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.move{border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;background:var(--white);position:relative;cursor:pointer;transition:.2s;display:flex;flex-direction:column;gap:8px}
+.move:hover{border-color:#b9cdf0}
+.move.on{border-color:var(--blue);box-shadow:0 10px 24px rgba(37,99,235,.10)}
+.move.na{cursor:default}
+.move .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.move .code{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--blue)}
+.move .tick{width:20px;height:20px;border-radius:6px;border:1.5px solid #c9d6ea;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:#fff;flex:none}
+.move.on .tick{background:var(--blue);border-color:var(--blue)}
+.move h3{font-size:15px;color:var(--navy);line-height:1.3}
+.move .val{display:flex;flex-wrap:wrap;gap:6px}
+.move .val span{font-size:11px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--mist);color:var(--navy)}
+.move .val span.v{background:var(--tealbg);color:var(--teal)}
+.move .val span.r{background:var(--amberbg);color:var(--amber)}
+.move p{font-size:12.5px;color:var(--soft);line-height:1.55}
+.move .how{font-size:12px;color:var(--ink);border-top:1px solid var(--line);padding-top:8px;margin-top:auto}
+.move .how b{color:var(--navy)}
+.guard{border:1px solid var(--line);border-left:3px solid var(--navy);border-radius:12px;padding:15px 18px;background:var(--mist);margin-top:14px;font-size:13px;color:var(--ink)}
+.guard b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.guard small{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:4px}
+.foot{border-top:1px solid var(--line);margin-top:40px;padding:20px 0 38px;font-size:12.5px;color:var(--soft)}
+.move:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.runbar{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;margin:14px 0 18px}
+.btn-run{font:inherit;font-size:14px;font-weight:800;color:#fff;background:var(--blue);border:0;border-radius:999px;padding:11px 20px;cursor:pointer;box-shadow:0 10px 24px rgba(37,99,235,.25)}
+.btn-run:hover{background:#1d4fd8}
+.btn-run:disabled{background:#9dbdf0;box-shadow:none;cursor:default}
+.btn-ghost{font:inherit;font-size:13px;font-weight:700;color:var(--navy);background:var(--white);border:1px solid var(--line);border-radius:999px;padding:10px 16px;cursor:pointer}
+.stages{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.stages span{font-size:11px;font-weight:700;color:var(--soft);border:1px solid var(--line);border-radius:999px;padding:6px 11px;display:inline-flex;align-items:center;gap:6px;background:var(--white)}
+.stages span i{width:8px;height:8px;border-radius:50%;background:#c9d6ea;display:inline-block}
+.stages span.active{color:var(--blue);border-color:var(--blue)} .stages span.active i{background:var(--blue);animation:blink 1s infinite}
+.stages span.done{color:var(--teal);border-color:#bfe3d6;background:var(--tealbg)} .stages span.done i{background:var(--teal)}
+@keyframes blink{50%{opacity:.3}}
+
+.layout{display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.side{display:grid;gap:14px;position:sticky;top:16px}
+.tabs{display:grid;gap:4px;border:1px solid var(--line);border-radius:12px;padding:6px;background:var(--white)}
+.tabs button{font:inherit;text-align:left;font-size:13px;font-weight:700;color:var(--ink);background:transparent;border:0;border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tabs button:hover{background:var(--mist)}
+.tabs button.on{background:var(--navy);color:#fff}
+.tabs button small{font-size:10.5px;font-weight:700;color:var(--soft);border:1px solid var(--line);border-radius:999px;padding:1px 7px}
+.tabs button.on small{color:#fff;border-color:rgba(255,255,255,.4)}
+.tabs button small.warn{color:var(--amber);border-color:#f3e0b3;background:var(--amberbg)}
+.recon,.prov{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--white);font-size:12.5px}
+.recon h4,.prov h4{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:8px}
+.recon .r{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);color:var(--ink)}
+.recon .r b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.recon .r b.ok{color:var(--teal)} .recon .r b.wait{color:var(--soft)}
+.prov .muted{color:var(--soft)}
+.prov dl{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;margin-top:4px}
+.prov dt{color:var(--soft);font-weight:600;white-space:nowrap}
+.prov dd{color:var(--navy);font-weight:600;font-variant-numeric:tabular-nums;word-break:break-word}
+.prov .pk{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:3px 8px;margin-bottom:6px}
+.pk.src{background:#dce8fb;color:#1d4fbd} .pk.formula{background:#efe6fb;color:#6836b3} .pk.flag{background:var(--amberbg);color:var(--amber)} .pk.ok{background:var(--tealbg);color:var(--teal)}
+
+.doc-wrap{background:#e9eef6;border-radius:14px;padding:22px}
+.doc{background:#fff;border-radius:6px;box-shadow:0 12px 36px rgba(13,42,94,.14);min-height:640px;padding:0 0 28px;position:relative;overflow:hidden}
+.doc-band{background:var(--navy);color:#fff;padding:20px 30px 16px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.doc-band .fund{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.doc-band .fund small{display:block;font-size:11px;font-weight:600;color:#9db8e8;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.doc-band .q{font-size:12px;color:#cfe0fb;text-align:right}
+.doc-band .q b{display:block;font-size:14px;color:#fff}
+.doc-body{padding:22px 30px 6px}
+.doc h2{font-size:17px;color:var(--navy);font-weight:800;margin:4px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+.doc h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);font-weight:800;margin:18px 0 8px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.dk{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fbfdff}
+.dk .l{font-size:11px;color:var(--soft);font-weight:600}
+.dk .v{font-size:19px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;margin-top:1px}
+.dtab{width:100%;border-collapse:collapse;font-size:12.5px}
+.dtab th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--soft);font-weight:700;text-align:right;padding:7px 8px;border-bottom:1px solid var(--line)}
+.dtab th:first-child{text-align:left}
+.dtab td{padding:7px 8px;border-bottom:1px solid #eef2f9;text-align:right;font-variant-numeric:tabular-nums}
+.dtab td:first-child{text-align:left;font-weight:700;color:var(--navy)}
+.dtab tr.total td{font-weight:800;color:var(--navy);border-top:2px solid var(--line);background:var(--mist)}
+.doc p.note{font-size:12px;color:var(--soft);line-height:1.6;margin-top:10px}
+.doc .pageno{position:absolute;bottom:10px;right:30px;font-size:10.5px;color:var(--soft)}
+
+/* fields */
+.fld{display:inline-flex;align-items:center;gap:4px;border-radius:5px;padding:0 3px;cursor:pointer;transition:background .15s;position:relative}
+.fld.empty{color:#b9c7dc}
+.fld.empty:after{content:"…"}
+.fld.filled{animation:fill .5s ease}
+.fld:hover,.fld.sel{background:#eaf1fe;outline:1.5px solid var(--blue)}
+.fld .m{font-size:9px;line-height:1;border-radius:3px;padding:2px 3px;font-weight:800}
+.fld .m.src{background:#dce8fb;color:#1d4fbd} .fld .m.formula{background:#efe6fb;color:#6836b3} .fld .m.flag{background:var(--amberbg);color:var(--amber)} .fld .m.ok{background:var(--tealbg);color:var(--teal)}
+@keyframes fill{from{background:#fff3cf}to{background:transparent}}
+
+/* QA page */
+.qa{width:100%;border-collapse:collapse;font-size:12.5px}
+.qa th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--soft);font-weight:700;text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+.qa td{padding:9px 8px;border-bottom:1px solid #eef2f9;vertical-align:top}
+.qa td:first-child{font-weight:700;color:var(--navy);white-space:nowrap}
+.qa .st{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 8px;white-space:nowrap}
+.qa .st.pass{background:var(--tealbg);color:var(--teal)} .qa .st.rev{background:var(--amberbg);color:var(--amber)} .qa .st.res{background:#dce8fb;color:#1d4fbd}
+.qa .act{font:inherit;font-size:11.5px;font-weight:700;color:var(--blue);background:transparent;border:1px solid var(--blue);border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap}
+.qa .act:disabled{color:var(--soft);border-color:var(--line);cursor:default}
+.signoff{margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:var(--mist)}
+.signoff .msg{font-size:13px;color:var(--ink)}
+.signoff .msg b{color:var(--navy)}
+.btn-approve{font:inherit;font-size:13px;font-weight:800;color:#fff;background:var(--teal);border:0;border-radius:999px;padding:10px 18px;cursor:pointer}
+.btn-approve:disabled{background:#b9d8cf;cursor:default}
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:22px}
+.find{border-left:3px solid var(--blue);background:var(--mist);border-radius:0 12px 12px 0;padding:14px 16px}
+.find b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.find p{font-size:12.5px;color:var(--soft);line-height:1.5}
+.toast{margin-top:10px;font-size:12.5px;color:var(--teal);font-weight:700}
+@media(prefers-reduced-motion:reduce){.fld.filled{animation:none}.stages span.active i{animation:none}}
+
+</style>
+
+<style>.aq-demo-disclosure{max-width:1140px;margin:16px auto 0;padding:11px 16px;border:1px solid #c9daf0;background:#f3f8ff;color:#405b80;border-radius:8px;font:12px/1.5 Arial,sans-serif;display:flex;gap:10px;align-items:flex-start}.aq-demo-disclosure strong{color:#071b54;white-space:nowrap}.aq-demo-disclosure span{flex:1}@media(max-width:700px){.aq-demo-disclosure{margin:12px 14px 0;display:block}.aq-demo-disclosure strong{display:block;margin-bottom:3px;white-space:normal}}</style>
+
+<style>
+/* V58.1 — canonical AssetQuant lockup on internal demo pages */
+.brand-lockup{display:inline-flex!important;align-items:center!important;gap:8px!important;color:#0d2a5e!important;font-weight:800!important;text-decoration:none!important}
+.brand-lockup img{display:block;width:54px;height:34px;object-fit:contain;flex:none}
+.brand-lockup .brand-wordmark{color:#0d2a5e!important;font-size:18px;line-height:1;letter-spacing:-.025em}
+@media(max-width:640px){.brand-lockup{gap:6px!important}.brand-lockup img{width:46px;height:30px}.brand-lockup .brand-wordmark{font-size:16px}}
+</style>
+<style>html.aq-embed .aq-demo-disclosure,html.aq-embed .topbar{display:none!important}html.aq-embed .head{padding-top:26px}</style>
+</head>
+<body>
+<div class="aq-demo-disclosure" role="note"><strong>Illustrative demonstration · Synthetic data</strong><span>Organisations, transactions, documents, figures and outcomes shown here are fictional or modelled for demonstration purposes. No client, bank or confidential data is used. Results are illustrative, not actual client outcomes or professional advice.</span></div>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand brand-lockup" href="../index.html#capabilities" aria-label="AssetQuant home"><img src="../assets/logo-approved-aq.png" alt="AQ"><span class="brand-wordmark">AssetQuant</span></a>
+  <a class="back" href="../index.html#capabilities">← Back to AssetQuant</a>
+</div></div>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <span class="kicker">Management &amp; institutional reporting · Interactive demo</span>
+      <h1>The quarterly supplement, <em>populated in one run.</em></h1>
+      <p class="sub">An open-ended core property fund closes Q3 2026. Press Populate and watch the investor supplement assemble itself: five source systems, 212 data points, every figure carrying its provenance, every exception held for a named reviewer before anything is distributed.</p>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="runbar">
+    <button class="btn-run" id="run" type="button">▶ Populate Q3 2026 supplement</button>
+    <button class="btn-ghost" id="reset" type="button">Reset</button>
+    <div class="stages" id="stages" role="list" aria-label="Run stages"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="side">
+      <div class="tabs" id="tabs" role="tablist" aria-label="Supplement pages"></div>
+      <div class="recon" id="recon"><h4>Reconciliations</h4></div>
+      <div class="prov" id="prov"><h4>Provenance</h4><p class="muted">Select any figure on the page to see where it came from.</p></div>
+    </aside>
+    <section class="doc-wrap">
+      <div class="doc" id="doc" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <section class="findings">
+    <div class="find"><b>Populate, don't re-key</b><p>Every number on the page is written by the run from a source system or a formula over other figures; 0 of 212 are typed by a person. The time goes into reviewing, not assembling.</p></div>
+    <div class="find"><b>Provenance on every figure</b><p>Source system, extract timestamp, formula and prior-quarter value travel with each value. An investor question becomes a click, not an archaeology exercise.</p></div>
+    <div class="find"><b>Held, not hidden</b><p>Figures that fail a rule are flagged on the page and listed for review. Distribution is blocked until a named reviewer resolves them.</p></div>
+  </section>
+</div>
+
+
+<script>
+/* ---------- house palette + helpers ---------- */
+const C={navy:"#0d2a5e",blue:"#2563eb",lblue:"#9dbdf0",teal:"#0e8a6d",red:"#b3402a",amber:"#b45309",gold:"#e7b12e",grid:"#eef2f9",mut:"#64748b",ink:"#33415c",pale:"#c8d9f5"};
+const $=id=>document.getElementById(id);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v||1)));const n=v/p;const steps=[1,1.2,1.5,2,2.5,3,4,5,6,8,10];const m=steps.find(x=>n<=x);return m*p;}
+function ticks(max,n=4){const out=[];for(let i=0;i<=n;i++)out.push(max*i/n);return out;}
+const fmtK=v=>v>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":String(Math.round(v));
+
+/* bars (left axis) + optional line (right axis) */
+function combo(id,o){
+  const {labels,bars,line,barColor=C.navy,barColors,lineColor=C.blue,yLabel="",y1Label="",y1Max,y1Min=0,everyLabel=1,barFmt=v=>v,lineFmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=line?46:14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...bars)*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,bw=(W-pl-pr)/n,barW=bw*0.6; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  bars.forEach((v,i)=>{const x=pl+i*bw+(bw-barW)/2; out+=`<rect x="${x}" y="${y(v)}" width="${barW}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${barColors?barColors[i]:barColor}"><title>${labels[i]}: ${barFmt(v)}</title></rect>`;});
+  labels.forEach((l,i)=>{ if(i%everyLabel===0) out+=`<text x="${pl+i*bw+bw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;});
+  if(line){
+    const lMax=y1Max||niceMax(Math.max(...line)*1.1), lMin=y1Min, y1=v=>pt+(1-(v-lMin)/(lMax-lMin))*(H-pt-pb);
+    ticks(lMax).forEach(t=>out+=`<text x="${W-pr+7}" y="${y1(t)+4}" font-size="10.5" fill="${C.mut}">${+t.toFixed(2)}</text>`);
+    if(y1Label) out+=`<text x="${W-2}" y="${pt-5}" font-size="10" fill="${C.mut}" text-anchor="end">${y1Label}</text>`;
+    const pts=line.map((v,i)=>`${pl+i*bw+bw/2},${y1(v)}`).join(" ");
+    out+=`<polyline fill="none" stroke="${lineColor}" stroke-width="2.4" stroke-linejoin="round" points="${pts}"/>`;
+    line.forEach((v,i)=>out+=`<circle cx="${pl+i*bw+bw/2}" cy="${y1(v)}" r="3.2" fill="#fff" stroke="${lineColor}" stroke-width="2"><title>${labels[i]}: ${lineFmt(v)}</title></circle>`);
+  }
+  $(id).innerHTML=out;
+}
+
+/* vertical grouped bars */
+function grouped(id,o){
+  const {labels,series,yLabel="",fmt=v=>v}=o;
+  const W=640,H=250,pl=46,pr=14,pt=22,pb=40;
+  const yMax=niceMax(Math.max(...series.flatMap(s=>s.data))*1.08), y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const n=labels.length,gw=(W-pl-pr)/n,inner=gw*0.68,bw=inner/series.length; let out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmtK(t)}</text>`);
+  if(yLabel) out+=`<text x="4" y="${pt-5}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  labels.forEach((l,i)=>{
+    series.forEach((s,k)=>{const v=s.data[i], x=pl+i*gw+(gw-inner)/2+k*bw; out+=`<rect x="${x+1}" y="${y(v)}" width="${bw-2}" height="${Math.max(1,y(0)-y(v))}" rx="3" fill="${s.color}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x+bw/2}" y="${y(v)-5}" font-size="10" font-weight="700" fill="${s.color}" text-anchor="middle">${fmt(v)}</text>`;});
+    out+=`<text x="${pl+i*gw+gw/2}" y="${H-pb+18}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${l}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* horizontal bars, single or grouped; optional per-row annotation */
+function hbars(id,o){
+  const {labels,series,xMax,fmt=v=>v,annot,rowH=34,labelW=150}=o;
+  const W=640,pl=labelW,pr=annot?112:70,pt=8;
+  const H=pt+labels.length*rowH+12;
+  const mx=xMax||niceMax(Math.max(...series.flatMap(s=>s.data))*1.1), x=v=>pl+v/mx*(W-pl-pr);
+  const bh=(rowH-8)/series.length; let out="";
+  ticks(mx).forEach(t=>out+=`<line x1="${x(t)}" x2="${x(t)}" y1="${pt}" y2="${H-10}" stroke="${C.grid}"/>`);
+  labels.forEach((l,i)=>{
+    const y0=pt+i*rowH+4;
+    out+=`<text x="${pl-10}" y="${y0+(rowH-8)/2+4}" font-size="11.5" font-weight="700" fill="${C.navy}" text-anchor="end">${l}</text>`;
+    series.forEach((s,k)=>{const v=s.data[i],yy=y0+k*bh,col=s.colors?s.colors[i]:s.color; out+=`<rect x="${pl}" y="${yy}" width="${Math.max(1,x(v)-pl)}" height="${bh-2}" rx="3" fill="${col}"><title>${l} · ${s.name}: ${fmt(v)}</title></rect><text x="${x(v)+5}" y="${yy+bh/2+3}" font-size="10.5" font-weight="700" fill="${col}">${fmt(v)}</text>`;});
+    if(annot) out+=`<text x="${W-2}" y="${y0+(rowH-8)/2+4}" font-size="10.5" font-weight="700" fill="${C.amber}" text-anchor="end">${annot[i]}</text>`;
+  });
+  const svg=$(id); svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML=out;
+}
+
+/* heatmap in house blue scale */
+function heat(id,rows,cols,data,fmt){
+  const flat=data.flat(),mn=Math.min(...flat),mx=Math.max(...flat);
+  const stops=[[238,244,253],[157,189,240],[37,99,235],[13,42,94]];
+  const col=v=>{const t=(v-mn)/((mx-mn)||1),s=Math.min(2.999,t*3),i=Math.floor(s),f=s-i;return [0,1,2].map(k=>Math.round(stops[i][k]+(stops[i+1][k]-stops[i][k])*f));};
+  let html=`<div></div>`+cols.map(c=>`<div class="hc">${c}</div>`).join("");
+  rows.forEach((r,ri)=>{html+=`<div class="hl">${r}</div>`;cols.forEach((c,ci)=>{const v=data[ri][ci],[R,G,B]=col(v),lum=(0.299*R+0.587*G+0.114*B)/255;html+=`<div class="cell ${lum<0.55?"dk":""}" style="background:rgb(${R},${G},${B})" title="${r} · ${c}: ${fmt(v)}">${fmt(v)}</div>`;});});
+  const el=$(id); el.style.gridTemplateColumns=`auto repeat(${cols.length},1fr)`; el.innerHTML=html;
+}
+
+/* effort vs value bubbles */
+function bubble(id,o){
+  const {items,xMax=5,yMax,yLabel,fmt}=o;
+  const W=640,H=310,pl=54,pr=20,pt=24,pb=58;
+  const my=yMax||niceMax(Math.max(...items.map(i=>i.value||0))*1.15);
+  const x=v=>pl+v/xMax*(W-pl-pr), y=v=>pt+(1-v/my)*(H-pt-pb); let out="";
+  ticks(my).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  [1,2,3,4].forEach(t=>out+=`<text x="${x(t)}" y="${H-pb+20}" font-size="10.5" fill="${C.mut}" text-anchor="middle">${t}</text>`);
+  out+=`<text x="${W-pr}" y="${H-6}" font-size="10.5" fill="${C.mut}" text-anchor="end">implementation effort →</text><text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${yLabel}</text>`;
+  // "do now" corner
+  out+=`<rect x="${x(0)}" y="${y(my)}" width="${x(2)-x(0)}" height="${y(my*0.4)-y(my)}" fill="rgba(14,138,109,.06)"/><text x="${x(0.1)}" y="${y(my)+14}" font-size="10.5" font-weight="700" fill="${C.teal}">DO NOW · low effort, high value</text>`;
+  items.forEach(it=>{
+    const on=it.on!==false, r=10+it.conf/100*14, cx=x(it.effort), cy=y(it.value||my*0.035);
+    const fill=it.value?(on?C.blue:"#c9d6ea"):"#fff", stroke=it.value?(on?C.navy:"#c9d6ea"):C.mut;
+    out+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" fill-opacity="${it.value?.85:1}" stroke="${stroke}" stroke-width="1.5" ${it.value?"":'stroke-dasharray="3 3"'}><title>${it.k} ${it.name}: ${it.value?fmt(it.value):"risk / enabler"} · confidence ${it.conf}%</title></circle>`;
+    out+=`<text x="${cx}" y="${cy+4}" font-size="10.5" font-weight="800" fill="${it.value&&on?"#fff":C.navy}" text-anchor="middle">${it.k}</text>`;
+    let tx=cx+r+6, ty=cy+4, anchor="start";
+    if(it.labelPos==="above"){tx=cx;ty=cy-r-6;anchor="middle";}
+    else if(it.labelPos==="left"||tx>W-150){tx=cx-r-6;anchor="end";}
+    out+=`<text x="${tx}" y="${ty}" font-size="10.5" fill="${on?C.ink:C.mut}" text-anchor="${anchor}">${it.short}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* waterfall */
+function waterfall(id,o){
+  const {steps,totalLabel,fmt,unit=""}=o;
+  const W=640,H=275,pl=50,pr=14,pt=28,pb=58;
+  const tot=sum(steps.map(s=>s.v)), yMax=niceMax(tot*1.12)||1, y=v=>pt+(1-v/yMax)*(H-pt-pb);
+  const all=[...steps,{l:totalLabel,v:tot,total:true}], n=all.length, bw=(W-pl-pr)/n, barW=bw*0.6; let run=0,out="";
+  ticks(yMax).forEach(t=>out+=`<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="${C.grid}"/><text x="${pl-7}" y="${y(t)+4}" font-size="10.5" fill="${C.mut}" text-anchor="end">${fmt(t)}</text>`);
+  out+=`<text x="4" y="${pt-9}" font-size="10" fill="${C.mut}">${unit}</text>`;
+  all.forEach((s,i)=>{
+    const x=pl+i*bw+(bw-barW)/2; let top,bot;
+    if(s.total){top=y(s.v);bot=y(0);} else {top=y(run+s.v);bot=y(run);run+=s.v;}
+    out+=`<rect x="${x}" y="${top}" width="${barW}" height="${Math.max(1.5,bot-top)}" rx="3" fill="${s.total?C.navy:(s.color||C.blue)}" ${s.soft?'fill-opacity=".55"':""}><title>${s.l}: ${fmt(s.v)}</title></rect>`;
+    out+=`<text x="${x+barW/2}" y="${top-6}" font-size="11" font-weight="700" fill="${s.total?C.navy:(s.color||C.blue)}" text-anchor="middle">${s.total?fmt(s.v):"+"+fmt(s.v)}</text>`;
+    if(!s.total&&i<n-1){const nx=pl+(i+1)*bw+(bw-barW)/2;out+=`<line x1="${x+barW}" x2="${nx}" y1="${y(run)}" y2="${y(run)}" stroke="#b9c7dc" stroke-dasharray="3 3"/>`;}
+    const w=s.l.split(" "), half=Math.ceil(w.length/2);
+    out+=`<text x="${x+barW/2}" y="${H-pb+18}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(0,half).join(" ")}</text><text x="${x+barW/2}" y="${H-pb+31}" font-size="10.5" fill="${C.ink}" text-anchor="middle">${w.slice(half).join(" ")}</text>`;
+  });
+  $(id).innerHTML=out;
+}
+
+/* move cards with toggles -> callback */
+function renderMoves(id,moves,onChange){
+  $(id).innerHTML=moves.map(m=>`
+    <div class="move ${m.on?"on":""} ${m.value?"":"na"}" data-k="${m.k}" ${m.value?'role="button" tabindex="0" aria-pressed="'+m.on+'"':""}>
+      <div class="top"><span class="code">MOVE ${m.k}</span>${m.value?'<span class="tick" aria-hidden="true">'+(m.on?"✓":"")+'</span>':'<span class="code" style="color:var(--soft)">'+m.tag+'</span>'}</div>
+      <h3>${m.name}</h3>
+      <div class="val">${m.value?`<span class="v">+${m.fmt(m.value)} / yr</span>`:`<span class="r">${m.tag}</span>`}<span>Effort: ${m.effortLabel}</span>${m.extra?`<span>${m.extra}</span>`:""}<span>Confidence ${m.conf}%</span></div>
+      <p>${m.why}</p>
+      <div class="how"><b>How:</b> ${m.how}</div>
+    </div>`).join("");
+  const el=$(id);
+  const toggle=card=>{const m=moves.find(x=>x.k===card.dataset.k); if(!m.value) return; m.on=!m.on; onChange();};
+  el.addEventListener("click",e=>{const c=e.target.closest(".move"); if(c) toggle(c);});
+  el.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const c=e.target.closest(".move"); if(c){e.preventDefault();toggle(c);}});
+}
+
+/* ---------- base figures (Q3 2026, $M unless stated) ---------- */
+const B={
+  gav:1418.6, debt:452.3, otherLiab:12.4, navOpen:940.2, income:10.6, apprec:4.9, contrib:12.0, redem:5.4, dist:8.4,
+  units:8.798, oneY:6.4, threeY:4.1, incep:7.2, assets:14,
+  sched:[["Harbour Logistics Park","Industrial",212.4,98,6.1],["Westfield Row Offices","Office",168.9,87,7.0],["Riverside Retail Centre","Retail",134.2,93,6.8],["Northgate Distribution","Industrial",121.7,100,5.9],["Parkview Residences","Residential",118.3,96,5.2],["Civic Square Medical","Healthcare",96.5,100,5.6]],
+  otherAssets:566.6,
+  mix:[["Industrial",38],["Office",24],["Retail",15],["Residential",13],["Healthcare",10]],
+  debtRows:[["Term loan A","Fixed",240.0,4.35,"Mar 2029"],["Revolving facility","Floating",112.3,5.90,"Sep 2027"],["Mortgage, Harbour Logistics","Fixed",100.0,4.80,"Dec 2030"]],
+  icr:3.4
+};
+const D={};
+D.nav=B.gav-B.debt-B.otherLiab;
+D.navClose=B.navOpen+B.income+B.apprec+B.contrib-B.redem-B.dist;
+D.lev=B.debt/B.gav*100;
+D.navUnit=D.nav/B.units;
+D.incRet=B.income/B.navOpen*100; D.appRet=B.apprec/B.navOpen*100; D.totRet=D.incRet+D.appRet;
+D.schedSum=sum(B.sched.map(r=>r[2]))+B.otherAssets;
+D.debtSum=sum(B.debtRows.map(r=>r[2]));
+D.waRate=sum(B.debtRows.map(r=>r[2]*r[3]))/D.debtSum;
+D.waOcc=sum(B.sched.map(r=>r[2]*r[3]))/sum(B.sched.map(r=>r[2]));
+
+const SRC={gl:"Fund accounting GL",pm:"Property management (rent roll)",tr:"Treasury & loan system",vl:"External valuer summary",ta:"Transfer agent (unit registry)"};
+const AS_OF="30 Sep 2026 · extracted 06 Oct 2026 07:42";
+const m=(v,d=1)=>"$"+v.toFixed(d)+"M", pc=(v,d=1)=>v.toFixed(d)+"%";
+
+/* field registry: value, kind (src|formula), source or formula, prior, flag text */
+const F={
+  gav:{v:m(B.gav),k:"src",s:SRC.vl,prior:"$1,402.1M",note:"Sum of external valuations at quarter-end"},
+  debt:{v:m(B.debt),k:"src",s:SRC.tr,prior:"$448.9M"},
+  nav:{v:m(D.nav),k:"formula",f:"GAV − debt − other net liabilities",prior:"$940.2M"},
+  lev:{v:pc(D.lev),k:"formula",f:"Debt ÷ GAV",prior:"32.0%"},
+  navUnit:{v:"$"+D.navUnit.toFixed(2),k:"formula",f:"NAV ÷ units in issue (8.798M)",prior:"$106.88"},
+  assets:{v:String(B.assets),k:"src",s:SRC.pm,prior:"14"},
+  occ:{v:pc(D.waOcc),k:"formula",f:"Value-weighted occupancy, top six assets",prior:"96.1%"},
+  navOpen:{v:m(B.navOpen),k:"src",s:SRC.gl,prior:"$928.7M",note:"Agrees to prior-quarter closing NAV"},
+  income:{v:m(B.income),k:"src",s:SRC.gl,prior:"$10.3M"},
+  apprec:{v:m(B.apprec),k:"src",s:SRC.vl,prior:"$3.8M",flag:"Valuer summary shows $4.7M; difference is one valuation received after cut-off. Confirm which figure is final."},
+  contrib:{v:m(B.contrib),k:"src",s:SRC.ta,prior:"$9.5M"},
+  redem:{v:m(B.redem),k:"src",s:SRC.ta,prior:"$6.1M"},
+  dist:{v:m(B.dist),k:"src",s:SRC.gl,prior:"$8.2M"},
+  navClose:{v:m(D.navClose),k:"formula",f:"Opening + income + appreciation + contributions − redemptions − distributions",prior:"$940.2M"},
+  incRet:{v:pc(D.incRet,2),k:"formula",f:"Net income ÷ opening NAV",prior:"1.11%"},
+  appRet:{v:pc(D.appRet,2),k:"formula",f:"Appreciation ÷ opening NAV",prior:"0.41%"},
+  totRet:{v:pc(D.totRet,2),k:"formula",f:"Income return + appreciation return",prior:"1.52%"},
+  oneY:{v:pc(B.oneY),k:"src",s:SRC.gl,prior:"6.1%"}, threeY:{v:pc(B.threeY),k:"src",s:SRC.gl,prior:"3.9%"}, incep:{v:pc(B.incep),k:"src",s:SRC.gl,prior:"7.2%"},
+  schedSum:{v:m(D.schedSum),k:"formula",f:"Sum of asset values incl. 8 other assets ($566.6M)",prior:"$1,402.1M",note:"Ties to GAV"},
+  debtSum:{v:m(D.debtSum),k:"formula",f:"Sum of facility balances",prior:"$448.9M",note:"Ties to balance-sheet debt"},
+  waRate:{v:pc(D.waRate,2),k:"formula",f:"Balance-weighted average all-in rate",prior:"4.79%"},
+  icr:{v:B.icr.toFixed(1)+"x",k:"src",s:SRC.gl,prior:"3.5x"}
+};
+B.sched.forEach((r,i)=>{F["a"+i+"v"]={v:m(r[2]),k:"src",s:SRC.vl,prior:"n/a"};F["a"+i+"o"]={v:r[3]+"%",k:"src",s:SRC.pm,prior:i===1?"93%":"n/a",flag:i===1?"Occupancy fell 6 points quarter-on-quarter, outside the 5-point tolerance. Confirm lease expiry at Westfield Row before release.":null};F["a"+i+"c"]={v:r[4].toFixed(1)+"%",k:"src",s:SRC.vl,prior:"n/a"};});
+B.debtRows.forEach((r,i)=>{F["d"+i+"b"]={v:m(r[2]),k:"src",s:SRC.tr,prior:"n/a",flag:i===1?"Drawn balance differs from the treasury confirmation by $0.3M (timing of a repayment on 30 Sep). Confirm cut-off treatment.":null};F["d"+i+"r"]={v:r[3].toFixed(2)+"%",k:"src",s:SRC.tr,prior:"n/a"};});
+const FLAGGED=Object.keys(F).filter(k=>F[k].flag);
+const TOTAL_POINTS=212;
+const CHECKS=[
+  ["RF-01","NAV roll-forward ties to closing NAV","pass"],["RF-02","Asset schedule sums to GAV","pass"],["RF-03","Facility balances tie to balance-sheet debt","pass"],["RF-04","Total return = income + appreciation","pass"],
+  ["TL-07","Westfield Row occupancy within 5-pt QoQ tolerance","rev","a1o"],["TL-12","Revolver drawn balance agrees to treasury confirmation","rev","d1b"],["TL-15","Appreciation agrees to valuer summary","rev","apprec"],
+  ["CP-02","All 14 assets valued this quarter","pass"],["CP-05","Units in issue agree to transfer agent","pass"],["CP-09","Distribution per unit agrees to declared rate","pass"],["TL-03","Income within 15% of prior quarter","pass"],["TL-04","GAV movement explained by valuations + capex","pass"]
+];
+let resolved=new Set(), approved=false, populated=false, selected=null;
+
+/* ---------- field rendering ---------- */
+const fld=(k,extra="")=>{const f=F[k];return `<span class="fld empty" data-f="${k}" role="button" tabindex="0" aria-label="${k}" ${extra}></span>`;};
+function paintField(el){
+  const k=el.dataset.f,f=F[k]; if(!f) return;
+  const isFlag=!!f.flag&&!resolved.has(k), isRes=!!f.flag&&resolved.has(k);
+  el.classList.remove("empty"); el.classList.add("filled");
+  el.innerHTML=`${f.v}<span class="m ${isFlag?"flag":isRes?"ok":f.k}" title="${isFlag?"Flagged for review":isRes?"Resolved":f.k==="src"?"Source system":"Formula"}">${isFlag?"⚑":isRes?"✓":f.k==="src"?"●":"ƒ"}</span>`;
+}
+
+/* ---------- pages ---------- */
+const PAGES=[
+  {k:"over",t:"Fund overview",h:()=>`
+    <h2>Fund overview, Q3 2026</h2>
+    <div class="dgrid">
+      <div class="dk"><div class="l">Gross asset value</div><div class="v">${fld("gav")}</div></div>
+      <div class="dk"><div class="l">Net asset value</div><div class="v">${fld("nav")}</div></div>
+      <div class="dk"><div class="l">NAV per unit</div><div class="v">${fld("navUnit")}</div></div>
+      <div class="dk"><div class="l">Leverage (debt ÷ GAV)</div><div class="v">${fld("lev")}</div></div>
+      <div class="dk"><div class="l">Assets</div><div class="v">${fld("assets")}</div></div>
+      <div class="dk"><div class="l">Weighted occupancy</div><div class="v">${fld("occ")}</div></div>
+    </div>
+    <h3>Sector allocation</h3>
+    <table class="dtab"><thead><tr><th>Sector</th><th>Share of GAV</th></tr></thead><tbody>${B.mix.map(([s,p])=>`<tr><td>${s}</td><td>${p}%</td></tr>`).join("")}</tbody></table>
+    <p class="note">The Fund is an open-ended, diversified core property vehicle. Figures are presented in USD millions unless stated and are unaudited. Prior-quarter comparatives and source references are available on every figure.</p>`},
+  {k:"perf",t:"Performance & returns",h:()=>`
+    <h2>Performance &amp; returns</h2>
+    <h3>NAV roll-forward</h3>
+    <table class="dtab"><tbody>
+      <tr><td>Opening NAV, 1 July 2026</td><td>${fld("navOpen")}</td></tr>
+      <tr><td>Net investment income</td><td>${fld("income")}</td></tr>
+      <tr><td>Unrealised appreciation</td><td>${fld("apprec")}</td></tr>
+      <tr><td>Contributions</td><td>${fld("contrib")}</td></tr>
+      <tr><td>Redemptions</td><td>(${fld("redem")})</td></tr>
+      <tr><td>Distributions</td><td>(${fld("dist")})</td></tr>
+      <tr class="total"><td>Closing NAV, 30 September 2026</td><td>${fld("navClose")}</td></tr>
+    </tbody></table>
+    <h3>Quarterly return</h3>
+    <div class="dgrid">
+      <div class="dk"><div class="l">Income return</div><div class="v">${fld("incRet")}</div></div>
+      <div class="dk"><div class="l">Appreciation return</div><div class="v">${fld("appRet")}</div></div>
+      <div class="dk"><div class="l">Total return, Q3</div><div class="v">${fld("totRet")}</div></div>
+    </div>
+    <h3>Trailing returns (annualised, net)</h3>
+    <table class="dtab"><thead><tr><th>Period</th><th>1 year</th><th>3 years</th><th>Since inception</th></tr></thead><tbody><tr><td>Total return</td><td>${fld("oneY")}</td><td>${fld("threeY")}</td><td>${fld("incep")}</td></tr></tbody></table>`},
+  {k:"port",t:"Portfolio schedule",h:()=>`
+    <h2>Portfolio schedule</h2>
+    <h3>Largest assets by value</h3>
+    <table class="dtab"><thead><tr><th>Asset</th><th>Sector</th><th>Value</th><th>Occupancy</th><th>Cap rate</th></tr></thead><tbody>
+      ${B.sched.map((r,i)=>`<tr><td>${r[0]}</td><td style="text-align:left;color:var(--soft)">${r[1]}</td><td>${fld("a"+i+"v")}</td><td>${fld("a"+i+"o")}</td><td>${fld("a"+i+"c")}</td></tr>`).join("")}
+      <tr><td>Eight other assets</td><td style="text-align:left;color:var(--soft)">Various</td><td>$566.6M</td><td></td><td></td></tr>
+      <tr class="total"><td>Total (ties to GAV)</td><td></td><td>${fld("schedSum")}</td><td></td><td></td></tr>
+    </tbody></table>
+    <p class="note">Values are external valuations at 30 September 2026. Occupancy is physical occupancy from the property-management system at quarter-end.</p>`},
+  {k:"debt",t:"Debt summary",h:()=>`
+    <h2>Debt summary</h2>
+    <table class="dtab"><thead><tr><th>Facility</th><th>Type</th><th>Balance</th><th>All-in rate</th><th>Maturity</th></tr></thead><tbody>
+      ${B.debtRows.map((r,i)=>`<tr><td>${r[0]}</td><td style="text-align:left;color:var(--soft)">${r[1]}</td><td>${fld("d"+i+"b")}</td><td>${fld("d"+i+"r")}</td><td>${r[4]}</td></tr>`).join("")}
+      <tr class="total"><td>Total debt (ties to balance sheet)</td><td></td><td>${fld("debtSum")}</td><td>${fld("waRate")}</td><td></td></tr>
+    </tbody></table>
+    <h3>Covenants</h3>
+    <div class="dgrid">
+      <div class="dk"><div class="l">Leverage vs 45% limit</div><div class="v">${fld("lev")}</div></div>
+      <div class="dk"><div class="l">Interest cover vs 2.0x minimum</div><div class="v">${fld("icr")}</div></div>
+      <div class="dk"><div class="l">Undrawn revolver</div><div class="v">$87.7M</div></div>
+    </div>`},
+  {k:"qa",t:"QA & sign-off",h:()=>{
+    const open=FLAGGED.filter(k=>!resolved.has(k)).length;
+    return `
+    <h2>Field-level QA &amp; sign-off</h2>
+    <table class="qa"><thead><tr><th>Rule</th><th>Check</th><th>Status</th><th></th></tr></thead><tbody>
+      ${CHECKS.map(c=>{const st=c[2]==="pass"?"pass":resolved.has(c[3])?"res":"rev";
+        return `<tr><td>${c[0]}</td><td>${c[1]}${st!=="pass"?`<div style="font-size:11.5px;color:var(--soft);margin-top:3px">${F[c[3]].flag}</div>`:""}</td><td><span class="st ${st}">${st==="pass"?"Pass":st==="res"?"Resolved":"Review"}</span></td><td>${c[2]==="rev"?`<button class="act" data-res="${c[3]}" type="button" ${st==="res"?"disabled":""}>${st==="res"?"Resolved":"Mark resolved"}</button>`:""}</td></tr>`;}).join("")}
+    </tbody></table>
+    <div class="signoff">
+      <div class="msg">${approved?`<b>Approved for distribution</b> · Q3 2026 supplement · reviewer sign-off recorded 06 Oct 2026 09:14`:open?`<b>${open} item${open>1?"s":""} open.</b> Distribution is blocked until every flagged figure is resolved by a named reviewer.`:`<b>All checks passed.</b> ${CHECKS.length} rules, ${TOTAL_POINTS} data points, 0 manual edits. Ready for sign-off.`}</div>
+      <button class="btn-approve" id="approve" type="button" ${open||approved?"disabled":""}>${approved?"✓ Approved":"Approve for distribution"}</button>
+    </div>
+    ${approved?`<div class="toast">Export prepared: Q3-2026-Supplement.pdf · QA-report.xlsx · provenance.csv</div>`:""}`;}}
+];
+let page="over";
+
+function renderTabs(){
+  const open=FLAGGED.filter(k=>!resolved.has(k)).length;
+  $("tabs").innerHTML=PAGES.map(p=>`<button role="tab" aria-selected="${p.k===page}" class="${p.k===page?"on":""}" data-p="${p.k}">${p.t}${p.k==="qa"?`<small class="${populated&&open?"warn":""}">${populated?(approved?"approved":open?open+" open":"ready"):"…"}</small>`:""}</button>`).join("");
+}
+function renderDoc(){
+  const p=PAGES.find(x=>x.k===page);
+  $("doc").innerHTML=`<div class="doc-band"><div class="fund"><small>Quarterly investor supplement</small>Ashworth Core Property Fund</div><div class="q"><b>Q3 2026</b>as of 30 September 2026 · unaudited</div></div><div class="doc-body">${p.h()}</div><div class="pageno">Page ${PAGES.indexOf(p)+1} of ${PAGES.length}</div>`;
+  if(populated) document.querySelectorAll("#doc .fld").forEach(paintField);
+  if(selected){const el=document.querySelector(`#doc .fld[data-f="${selected}"]`); if(el) el.classList.add("sel");}
+}
+function renderRecon(){
+  const ok=populated;
+  const rows=[["NAV roll-forward ties", ok?m(D.navClose)+" = "+m(D.nav):"…"],["Schedule sums to GAV", ok?m(D.schedSum)+" = "+m(B.gav):"…"],["Facilities tie to debt", ok?m(D.debtSum)+" = "+m(B.debt):"…"],["Return = income + apprec.", ok?pc(D.totRet,2):"…"]];
+  $("recon").innerHTML=`<h4>Reconciliations</h4>`+rows.map(r=>`<div class="r"><span>${r[0]}</span><b class="${ok?"ok":"wait"}">${ok?"✓ ":""}${r[1]}</b></div>`).join("");
+}
+function renderProv(){
+  const el=$("prov");
+  if(!selected||!populated){el.innerHTML=`<h4>Provenance</h4><p class="muted">${populated?"Select any figure on the page to see where it came from.":"Run the population first; every figure will carry its source."}</p>`;return;}
+  const f=F[selected]; const flag=f.flag&&!resolved.has(selected);
+  el.innerHTML=`<h4>Provenance</h4><span class="pk ${flag?"flag":f.flag?"ok":f.k}">${flag?"⚑ Flagged for review":f.flag?"✓ Resolved":f.k==="src"?"● Source system":"ƒ Formula"}</span>
+    <dl><dt>Value</dt><dd>${f.v}</dd>${f.k==="src"?`<dt>Source</dt><dd>${f.s}</dd><dt>As of</dt><dd>${AS_OF}</dd>`:`<dt>Formula</dt><dd>${f.f}</dd>`}<dt>Prior quarter</dt><dd>${f.prior}</dd>${f.note?`<dt>Note</dt><dd>${f.note}</dd>`:""}${f.flag?`<dt>Review</dt><dd style="color:var(--amber)">${f.flag}</dd>`:""}</dl>`;
+}
+function renderKpis(){
+  const open=FLAGGED.filter(k=>!resolved.has(k)).length;
+  $("kpis").innerHTML=`
+    <div class="kpi"><div class="l">Supplement pages</div><div class="v">${PAGES.length-1}<span style="font-size:13px;color:var(--soft)"> + QA</span></div><div class="d">overview · returns · schedule · debt</div></div>
+    <div class="kpi"><div class="l">Data points populated</div><div class="v">${populated?TOTAL_POINTS:0}<span style="font-size:13px;color:var(--soft)"> / ${TOTAL_POINTS}</span></div><div class="d">from 5 source systems</div></div>
+    <div class="kpi"><div class="l">Figures typed by a person</div><div class="v good">0</div><div class="d">assembly time → review time</div></div>
+    <div class="kpi"><div class="l">Open review items</div><div class="v ${populated&&open?"warn":""}">${populated?open:"…"}</div><div class="d">${populated?(approved?"approved for distribution":open?"distribution blocked":"ready for sign-off"):"run to populate"}</div></div>`;
+}
+function renderAll(){renderTabs();renderDoc();renderRecon();renderProv();renderKpis();}
+
+/* ---------- run ---------- */
+const STAGES=["Fetch sources","Extract & map","Reconcile","Populate pages","QA & flags"];
+let timers=[];
+function setStage(i,cls){document.querySelectorAll("#stages span").forEach((s,n)=>{s.classList.remove("active","done");if(n<i)s.classList.add("done");if(n===i&&cls)s.classList.add(cls);});}
+function run(){
+  timers.forEach(clearTimeout);timers=[]; resolved=new Set(); approved=false; populated=false; selected=null; page="over"; renderAll();
+  $("run").disabled=true;
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches, SP=reduce?0:1;
+  let t=0; const at=(ms,fn)=>{t+=ms*SP;timers.push(setTimeout(fn,t));};
+  at(50,()=>setStage(0,"active")); at(900,()=>setStage(1,"active")); at(900,()=>setStage(2,"active")); at(800,()=>{setStage(3,"active");populated=true;renderRecon();renderKpis();renderTabs();
+    // progressive fill of the visible page
+    const els=[...document.querySelectorAll("#doc .fld")]; els.forEach((el,i)=>timers.push(setTimeout(()=>paintField(el),i*70*SP)));});
+  at(1800,()=>{setStage(4,"active");renderTabs();});
+  at(700,()=>{setStage(5,"done");document.querySelectorAll("#stages span").forEach(s=>s.classList.add("done"));$("run").disabled=false;renderAll();});
+}
+function reset(){timers.forEach(clearTimeout);timers=[];resolved=new Set();approved=false;populated=false;selected=null;page="over";setStage(-1);$("run").disabled=false;renderAll();}
+
+/* ---------- events ---------- */
+$("stages").innerHTML=STAGES.map(s=>`<span role="listitem"><i></i>${s}</span>`).join("");
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;page=b.dataset.p;renderTabs();renderDoc();});
+$("doc").addEventListener("click",e=>{
+  const r=e.target.closest("[data-res]"); if(r){resolved.add(r.dataset.res);renderAll();return;}
+  const ab=e.target.closest("#approve"); if(ab){ if(ab.disabled) return; approved=true;renderAll();return;}
+  const f=e.target.closest(".fld"); if(f&&populated){selected=f.dataset.f;document.querySelectorAll("#doc .fld").forEach(x=>x.classList.toggle("sel",x===f));renderProv();}
+});
+$("doc").addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const f=e.target.closest(".fld");if(f&&populated){e.preventDefault();selected=f.dataset.f;document.querySelectorAll("#doc .fld").forEach(x=>x.classList.toggle("sel",x===f));renderProv();}});
+$("run").addEventListener("click",run);
+if(new URLSearchParams(location.search).get("autorun")==="1"||/autorun/.test(window.name)){setTimeout(run,900);}
+$("reset").addEventListener("click",reset);
+renderAll();
+
+</script>
+<script>if(new URLSearchParams(location.search).get("embed")==="1"||/^aq-embed/.test(window.name)){document.documentElement.classList.add("aq-embed");}</script>
+</body>
+</html>
