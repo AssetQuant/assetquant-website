@@ -1059,3 +1059,24 @@ body.aq-footer-visible #reach-pill,body.aq-footer-visible #reach{display:none!im
 .compact-footer .aq-footer-contact{border:0;background:transparent;padding:2px 0;font:inherit;font-size:12px;font-weight:700;color:#165dca;text-align:left;cursor:pointer}
 .compact-footer .aq-footer-contact:hover{text-decoration:underline}
 .compact-footer .aq-footer-contact:focus-visible{outline:2px solid #165dca;outline-offset:3px;border-radius:2px}
+
+/* 2026-10-21: navigation collision repair + platform and founder */
+@media(min-width:901px){header.nav{position:relative!important;top:auto!important;left:auto!important;right:auto!important;min-height:88px!important;height:auto!important;gap:18px!important;padding:12px 5%!important;background:#fff!important;flex-wrap:wrap!important}header.nav nav{gap:18px!important;align-items:center!important;flex-wrap:wrap!important}header.nav .contact{margin-left:0!important}.hero{padding-top:75px!important}}
+@media(max-width:900px){header.nav{position:relative!important;background:#fff!important}.hero{padding-top:55px!important}}
+.aq-platform-preview{padding:66px 7%;background:#eef5ff}.aq-platform-inner{max-width:1160px;margin:auto}.aq-platform-preview h2{font-size:clamp(28px,4vw,44px);margin:12px 0;color:#071b54}.aq-platform-preview h2 em{color:#0867f2;font-style:normal}.aq-platform-preview p{max-width:740px;line-height:1.65;color:#526b95}.aq-platform-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:25px}.aq-platform-cards a{background:#fff;border:1px solid #d5e4f6;border-radius:13px;padding:22px;display:grid;gap:10px;min-height:130px}.aq-platform-cards a:hover{border-color:#0867f2;box-shadow:0 8px 24px #0a4c9b16}.aq-platform-cards strong{font-size:17px;color:#0a367a}.aq-platform-cards span{font-size:13px;line-height:1.5;color:#526b95}.aq-founder{padding:30px 7%;background:#fff}.aq-founder-inner{display:flex;align-items:center;gap:23px;max-width:850px;margin:auto;border:1px solid #e3ebf5;border-radius:14px;padding:22px 26px}.aq-founder img{width:108px;height:108px;object-fit:cover;object-position:center top;border-radius:50%;flex-shrink:0}.aq-founder h2{font-size:24px;margin:5px 0}.aq-founder-role{font-weight:700;color:#0867f2!important}.aq-founder p{font-size:13px;line-height:1.55;color:#526b95;margin:5px 0}@media(max-width:760px){.aq-platform-cards{grid-template-columns:1fr}.aq-founder-inner{padding:18px;align-items:flex-start}.aq-founder img{width:76px;height:76px}.aq-founder h2{font-size:21px}}
+
+/* V65: editorial founder profile and plain-language AQuA demo entry points */
+.aq-founder{padding:72px 7%!important;background:#fff!important}
+.aq-founder-inner{max-width:1160px!important;display:grid!important;grid-template-columns:minmax(210px,340px) minmax(0,1fr)!important;gap:clamp(32px,6vw,90px)!important;align-items:center!important;border:0!important;border-radius:0!important;padding:0!important}
+.aq-founder img{width:100%!important;height:auto!important;aspect-ratio:4/4.7;object-fit:cover!important;object-position:center top!important;border-radius:6px!important;filter:none!important}
+.aq-founder h2{font-size:clamp(30px,3.6vw,46px)!important;line-height:1.12!important;margin:12px 0 10px!important}
+.aq-founder .aq-founder-role{font-size:15px!important;margin-bottom:24px!important}
+.aq-founder .aq-founder-copy p:not(.aq-founder-role){font-size:15px!important;line-height:1.8!important;margin:0 0 18px!important;color:#365372!important}
+.aq-demo-feature{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:22px 0 24px;max-width:690px}
+.aq-demo-feature a{display:flex;flex-direction:column;gap:9px;padding:18px;border:1px solid #d3e2f4;border-radius:12px;background:#fff;text-decoration:none;min-width:0;transition:border-color .2s,box-shadow .2s}
+.aq-demo-feature a:hover{border-color:#0867f2;box-shadow:0 8px 20px rgba(14,72,150,.1)}
+.aq-demo-feature .aq-demo-label{font-size:10px;font-weight:700;letter-spacing:.05em;color:#165dca}
+.aq-demo-feature strong{font-size:17px;line-height:1.25;color:#071b54}
+.aq-demo-feature small{font-size:12px;line-height:1.55;color:#526b85}
+.aq-demo-feature .aq-demo-link{font-size:12px;color:#165dca;font-weight:700;margin-top:auto}
+@media(max-width:760px){.aq-founder{padding:44px 6%!important}.aq-founder-inner{grid-template-columns:1fr!important;gap:24px!important}.aq-founder img{max-width:280px!important;aspect-ratio:4/4.7!important}.aq-demo-feature{grid-template-columns:1fr}}

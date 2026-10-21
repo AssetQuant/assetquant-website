@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reporting pipeline orchestration | AssetQuant</title>
-<meta name="description" content="Interactive demonstration: a quarter-end reporting chain for 25 funds, fanned out by data domain with validation rules and a human review gate.">
+<meta name="description" content="Interactive demonstration: a quarter-end reporting chain for 50 funds, fanned out by data domain with validation rules and a human review gate.">
 <style>
 :root{
   --navy:#0d2a5e; --blue:#2563eb; --lblue:#9dbdf0; --ink:#33415c; --soft:#64748b;
@@ -178,7 +178,7 @@ tbody tr:last-child td{border-bottom:none}
 @media(max-width:640px){.brand-lockup{gap:6px!important}.brand-lockup img{width:46px;height:30px}.brand-lockup .brand-wordmark{font-size:16px}}
 </style>
 <style>html.aq-embed .aq-demo-disclosure,html.aq-embed .topbar{display:none!important}html.aq-embed .head{padding-top:26px}</style>
-</head>
+<link rel="canonical" href="https://assetquant.ai/demos/reporting-pipeline.html"><meta name="robots" content="index,follow"></head>
 <body>
 <div class="aq-demo-disclosure" role="note"><strong>Illustrative demonstration · Synthetic data</strong><span>Organisations, transactions, documents, figures and outcomes shown here are fictional or modelled for demonstration purposes. No client, bank or confidential data is used. Results are illustrative, not actual client outcomes or professional advice.</span></div>
 
@@ -190,8 +190,8 @@ tbody tr:last-child td{border-bottom:none}
   <header class="head">
     <div>
       <span class="kicker">Technology &amp; data enablement · Interactive demo</span>
-      <h1>One chain. Twenty-five funds. <em>Zero re-keying.</em></h1>
-      <p class="sub">A quarter-end reporting pipeline for a 25-fund real-estate manager. Instead of 25 hand-built branches, the chain fans out by data domain, validates every figure against rules, and stops at a human gate before anything is published. Press Execute to run it.</p>
+      <h1>One chain. Fifty funds. <em>Zero re-keying.</em></h1>
+      <p class="sub">A quarter-end reporting pipeline for a 50-fund real-estate manager. Instead of 50 hand-built branches, the chain fans out by data domain, validates every figure against rules, and stops at a human gate before anything is published. Press Execute to run it.</p>
     </div>
   </header>
 
@@ -216,7 +216,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="log" id="log" aria-live="polite"><div class="logline muted">Waiting for execution…</div></div>
     </div></section>
     <section class="panel"><div class="panel-in">
-      <h3>What each stage does</h3><p class="hint">Same four stages in every lane; that is what makes 25 funds maintainable</p>
+      <h3>What each stage does</h3><p class="hint">Same four stages in every lane; that is what makes 50 funds maintainable</p>
       <div class="stages">
         <div><b>Query</b>Runs the domain's master query against the source system for all funds in scope: one parameterised query, not one per fund.</div>
         <div><b>Extract</b>Pulls the result set and maps it to the reporting schema: fund, period, line item, value, source reference.</div>
@@ -226,16 +226,16 @@ tbody tr:last-child td{border-bottom:none}
       <h3 class="mt14">Run history</h3>
       <div class="scroll-x"><table id="hist"><thead><tr><th>Quarter</th><th>Funds</th><th>Validations</th><th>Exceptions</th><th>Runtime</th><th>Manual edits</th></tr></thead>
       <tbody>
-        <tr><td>Q2 2026</td><td>25</td><td>142</td><td>2</td><td>11m 40s</td><td>0</td></tr>
-        <tr><td>Q1 2026</td><td>25</td><td>142</td><td>4</td><td>12m 05s</td><td>0</td></tr>
-        <tr><td>Q4 2025</td><td>24</td><td>136</td><td>7</td><td>13m 20s</td><td>1</td></tr>
-        <tr><td>Q3 2025 <span class="chip assist">before automation</span></td><td>24</td><td>n/a</td><td>n/a</td><td>~9 working days</td><td>~2,100</td></tr>
+        <tr><td>Q2 2026</td><td>50</td><td>142</td><td>2</td><td>11m 40s</td><td>0</td></tr>
+        <tr><td>Q1 2026</td><td>50</td><td>142</td><td>4</td><td>12m 05s</td><td>0</td></tr>
+        <tr><td>Q4 2050</td><td>48</td><td>136</td><td>7</td><td>13m 20s</td><td>1</td></tr>
+        <tr><td>Q3 2025 <span class="chip assist">before automation</span></td><td>48</td><td>n/a</td><td>n/a</td><td>~9 working days</td><td>~2,100</td></tr>
       </tbody></table></div>
     </div></section>
   </div>
 
   <section class="findings">
-    <div class="find"><b>Fan out by domain, not by fund</b><p>Four lanes carry 25 funds because the fund is a parameter, not a branch. Adding fund 26 is a register row, not a new pipeline.</p></div>
+    <div class="find"><b>Fan out by domain, not by fund</b><p>Four lanes carry 50 funds because the fund is a parameter, not a branch. Adding fund 51 is a register row, not a new pipeline.</p></div>
     <div class="find"><b>Validate before load, always</b><p>Every figure passes the rule set before it touches the workbook. Exceptions are routed to people with context attached, not overwritten and not ignored.</p></div>
     <div class="find"><b>A human gate before publication</b><p>The chain prepares; a named reviewer approves. Automation removes the re-keying, not the accountability.</p></div>
   </section>
@@ -383,7 +383,7 @@ const LANES=[
 ];
 const STAGES=[{k:"q",l:"Query",s:"master query",x:400},{k:"e",l:"Extract",s:"map to schema",x:540},{k:"v",l:"Validate",s:"rule set",x:680},{k:"l",l:"Load",s:"workbook cells",x:820}];
 const PW=112,PH=36, MIDY=260;
-const FUNDS=25;
+const FUNDS=50;
 
 /* ---------- build the map ---------- */
 function pill(id,x,y,l,s,cls=""){return `<g class="node ${cls}" id="${id}"><rect x="${x-PW/2}" y="${y-PH/2}" width="${PW}" height="${PH}" rx="18"/><text x="${x}" y="${y-2}" text-anchor="middle">${l}</text><text class="sub" x="${x}" y="${y+11}" text-anchor="middle">${s}</text><text class="tick" id="${id}-tick" x="${x+PW/2-14}" y="${y-PH/2+5}" display="none">✓</text></g>`;}
@@ -443,7 +443,7 @@ function run(){
   $("run").disabled=true; $("runstate").textContent="Running…"; $("log").innerHTML=""; t0=performance.now();
   let t=0; const step=(ms,fn)=>{t+=ms*SP;after(t,fn);};
   step(100,()=>{setNode("n-trig","active");log("Trigger received: Q3 2026 quarter-end close confirmed by finance.");});
-  step(600,()=>{setNode("n-trig","done");setEdge("e-trig","flow");setNode("n-reg","active");log("Reading fund register… 25 funds in scope, 4 data domains.");});
+  step(600,()=>{setNode("n-trig","done");setEdge("e-trig","flow");setNode("n-reg","active");log("Reading fund register… 50 funds in scope, 4 data domains.");});
   step(700,()=>{setEdge("e-trig","done");setNode("n-reg","done");S.funds=FUNDS;renderKpis();LANES.forEach(L=>setEdge(`e-reg-${L.k}`,"flow"));log("Fan-out: 4 domain lanes started in parallel.","ok");});
   const laneStart=t; const stageDur=[900,800,1100,900];
   LANES.forEach((L,li)=>{
