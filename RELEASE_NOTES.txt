@@ -1,0 +1,8 @@
+AssetQuant website update 2026-10-22
+- Added interactive KYC Synchronization scenario (six-stage synthetic workflow) alongside existing KYC Verification and Payments Intelligence.
+- Explicitly distinguishes notification from confirmed downstream synchronization; includes failure, retry and human review.
+- Added dedicated real-estate-analytics.html SEO service page with internal demo links.
+- Updated sitemap with new service page.
+- Retained Founder title and original product/website assets.
+- NOTE: Facebook videos were not accessible for content verification. No ranking guarantees.
+- TEST before deploying: all product tabs, autoplay/replay, mobile navigation, contact form, demos.

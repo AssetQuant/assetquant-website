@@ -58,7 +58,7 @@ document.getElementById("run-flow")?.addEventListener("click",()=>{
        tourBtn=document.getElementById('ds-tour'), prog=document.getElementById('ds-progress'), progBar=prog.querySelector('i'),
        filterBox=document.getElementById('ds-filter'), filterName=document.getElementById('ds-filter-name'), filterClear=document.getElementById('ds-filter-clear'), list=document.getElementById('ds-list');
  const BASE_W=1280, BASE_H=1120, TOUR_MS=15000;
- const INDS={finance:'Financial Services',realestate:'Real Estate',manufacturing:'Manufacturing',healthcare:'Healthcare',retail:'Retail & Consumer',tech:'Technology',mining:'Mining & Resources'};
+ const INDS={finance:'Financial Services',realestate:'Real Estate',manufacturing:'Manufacturing',retail:'Retail & Consumer',tech:'Technology',mining:'Mining & Resources'};
  let current=null, armed=false, tour=false, tourStart=0, tourTick=null, filter=null;
  const visible=()=>items.filter(b=>!b.classList.contains('dim')&&(list.classList.contains('expanded')||list.classList.contains('filtering')||!b.classList.contains('more')));
  function fit(){ const w=frame.clientWidth; const base=w<600?900:BASE_W; const s=w/base; iframe.style.width=base+'px'; iframe.style.transform='scale('+s+')'; iframe.style.height=Math.max(BASE_H, frame.clientHeight/s)+'px'; }
