@@ -1,8 +1,126 @@
-AssetQuant website update 2026-10-22
-- Added interactive KYC Synchronization scenario (six-stage synthetic workflow) alongside existing KYC Verification and Payments Intelligence.
-- Explicitly distinguishes notification from confirmed downstream synchronization; includes failure, retry and human review.
-- Added dedicated real-estate-analytics.html SEO service page with internal demo links.
-- Updated sitemap with new service page.
-- Retained Founder title and original product/website assets.
-- NOTE: Facebook videos were not accessible for content verification. No ranking guarantees.
-- TEST before deploying: all product tabs, autoplay/replay, mobile navigation, contact form, demos.
+AssetQuant website update 2026-11-12
+
+A. Real-estate tilt corrected
+   - Removed the "Real estate investment analytics and reporting automation" SEO band
+     from the homepage at Vipul's request - the site read as a real-estate company.
+   - The deeper cause was the metadata, which is what Google and link previews read.
+     All four led with real estate and now lead with banking:
+       title           was "AssetQuant | Real Estate Analytics, AI & Technology Consulting"
+                       now "AssetQuant | Banking Software, Analytics and Consulting"
+       description     now leads with banking software and names AQuA KYC
+       og:title        matched to the new title
+       og:description  matched to the new description
+   - The Organization structured data (JSON-LD) also described the company as real
+     estate only. Its description now leads with banking, and knowsAbout gained
+     "CKYC integration", "KYC compliance technology" and "Banking software".
+     Real estate analytics is kept in the list - it is a real service line.
+   - real-estate-analytics.html is kept and still linked from the main nav, so it is
+     not orphaned. OPEN QUESTION for Vipul: should it stay in the top nav?
+
+B. Site review - everything found was fixed
+   - Titles over 60 characters: index.html, aqua/kyc.html, real-estate-analytics.html.
+   - Meta descriptions over 160 characters: index.html, aqua/kyc.html.
+   - privacy.html and terms.html had no meta description at all. Added.
+   - demos/index.html is a redirect stub and pointed at #capabilities, an anchor that
+     does not exist on the homepage. Now points at #demos, which does.
+   - Checked across 8 pages: HTTP status, title length, description length, one h1 per
+     page, images without alt text, links with no text, lang attribute, every internal
+     link resolving, and sideways scroll at 390px. No other issues found.
+   - NOTE: an automated link check reports 17 broken links on /demos/index.html. That
+     is a false positive - the checker follows the redirect to the homepage and then
+     resolves the homepage's relative links against /demos/. Verified by hand: the stub
+     lands on /index.html#demos and the anchor exists.
+
+0. The product console MOVED to the KYC page
+   - The three-scenario console (markup, 17KB of CSS, 24KB of JS) was lifted out of
+     index.html and now lives on aqua/kyc.html, immediately after the hero.
+   - Reason: aqua/kyc.html is the page to send in a LinkedIn DM. Sending someone to a
+     good page that then bounces them to the busy homepage to see the proof defeats it.
+     One self-contained page now does everything: what it is, watch it run, where it
+     stands, book a walkthrough.
+   - The homepage keeps a compact AQuA KYC band at #products: headline, the three
+     capabilities, a static four-step panel, and a button through to the product page.
+     The #products anchor still resolves, so the footer nav is unbroken.
+   - The console's own heading was rewritten for its new context: was "From a signal to
+     a decision" covering Payments and KYC; now "Three workflows, start to finish".
+   - aqua/index.html and aqua/demos.html links repointed from ../index.html#products
+     to kyc.html#products.
+   - Verified: console autostarts on scroll, all three tabs run, no JS errors on any
+     page, every internal link returns 200, no sideways scroll at 390px.
+
+1. AQuA KYC rewritten from "proposed concept" to the product as built
+   - aqua/kyc.html: full rewrite, then simplified for a non-technical first reader.
+     Hero, a before/after picture (three separate connections vs one through AQuA),
+     "What your staff can do" (four one-line cards), "Three things your auditors will
+     ask about", "Where it stands", "Going live". All technical detail is collapsed
+     into a "For your technology team" section at the bottom.
+   - aqua/index.html and aqua/demos.html rewritten in the same plain voice.
+   - index.html: the KYC console scenario is now the real lookup flow - verification
+     hub, registry search returning two records (one active, one inactive duplicate),
+     consent and release, compliance and audit. Tab is "KYC lookup".
+   - index.html: NEW third console scenario, "New KYC record - possible duplicate".
+     Five steps: record intake, the checks that run before anything is sent, filing
+     with the registry, the registry answering PROBABLE MATCH with two candidates,
+     and the decision trail. Ends on "Is this the same person?" with a human choice.
+     Added because the console previously showed only lookup and synchronisation,
+     which understated the product.
+   - index.html: the three console tabs are now named after the product capabilities -
+     "Search & download", "Create a record", "Update & sync" - so a visitor can map
+     what they are watching to what the product does. Download and update were both
+     already in there, buried inside steps with other names.
+   - index.html: the console footer strip said "Read-only" and "No bank write access".
+     That was written for AQuA Payments and is wrong for KYC, where filing a record
+     and updating an address are writes. Now reads: synthetic data, filed under your
+     own registration, nothing written without approval, human sign-off before any action.
+   - index.html: the KYC synchronization scenario kept its six steps but lost the
+     "conceptual / illustrative only / not a real integration" hedging. Still states
+     synthetic data, because that is true.
+
+   Claim position: headline treats AQuA KYC as a real product. Search, record retrieval
+   with OTP consent and record creation are stated as built and tested end to end;
+   face/signed-form consent, periodic update and synchronisation as in build. "Tested"
+   is defined on the page as against a CKYCRR 2.0 simulator built from CERSAI's API
+   guide v2.1, explicitly not a substitute for CERSAI's own testbed. The site never
+   claims CERSAI certification, and says CERSAI registers Reporting Entities rather
+   than technology vendors.
+
+2. AQuA Payments removed
+   - Deleted aqua/payments.html and demos/aqua-payments-flow.html.
+   - Removed the Payments tab and scenario from the homepage product console; KYC
+     lookup is now the default, including the static text shown before JavaScript runs.
+   - Removed the Payments track from aqua/index.html and all nav links.
+   - KEPT demos/payments-exception-analytics.html and the payments copy in the services
+     section. That is consulting analytics work, not the AQuA Payments product, and it
+     is still a service AssetQuant offers.
+
+3. Team added
+   - New "The team" band inside #who-we-are on index.html: Gaurav Jain, Pratima Mishra,
+     Alok Mishra, Vartika Tiwari, Reshu Singh, Aarohi Pandey. Three columns (two clean
+     rows of three), two at tablet, one on phone.
+   - The band intro no longer says "Senior engineers", which was wrong for half the
+     people in it.
+   - Pratima Mishra is the banking domain person and her card says so - that is the
+     card a bank looks for when asking who on our side has worked inside one.
+   - Reshu Singh listed as marketing consultant; Aarohi Pandey as marketing associate.
+   - Founder title left as "Founder - Technology, Product & Analytics" at Vipul's request.
+   - Founder bio rebalanced to lead with banking and AQuA KYC rather than real estate,
+     and now names product, architecture AND security, because a bank's information
+     security team will ask who owns security.
+   - aqua/kyc.html "Going live" now states that every build is scanned for code and
+     dependency vulnerabilities (SAST and SCA) before it ships.
+
+   All five team descriptions were written only from the role and years given. No
+   employers, certifications or projects were invented. Each person should read their
+   own card before this is deployed.
+
+4. Sitemap
+   - Added aqua/, aqua/kyc.html and aqua/demos.html, which were never listed.
+
+Tested 12 Nov 2026
+   - All four remaining pages return 200 and render.
+   - Both console tabs run with no JavaScript errors - the scenario objects were hand
+     edited, so this matters.
+   - No dead links to the deleted Payments pages anywhere on the homepage.
+   - No horizontal scroll at 1360px or 390px on the homepage or aqua/kyc.html.
+
+Before deploying: click both console tabs, the AQuA nav, and the contact form.
