@@ -291,7 +291,7 @@
     <div>
       <p class="pi-eyebrow"><span class="pi-dot"></span>AQUA KYC / WATCH IT RUN</p>
       <h2 id="pi-title">Three workflows, <em>start to finish.</em></h2>
-      <p class="pi-lead">Each one plays out step by step on a synthetic customer. Pause or replay at any point. Every run ends the same way — with a person deciding, not the software.</p>
+      <p class="pi-lead">Each one plays out step by step on a synthetic customer. Pause or replay at any point. Every run ends the same way - with a person deciding, not the software.</p>
     </div>
     <div class="pi-trust"><span>SYNTHETIC CUSTOMERS · CKYCRR 2.0 SIMULATOR</span><b>Built to CERSAI API guide v2.1.</b></div>
   </div>
@@ -359,7 +359,7 @@
 
 <section class="section"><div class="wrap">
 <h2 class="wide">Three connections become one.</h2>
-<p class="say">The registry is strict about security and fussy about formats. Most banks do that work once per channel — and then wonder why three systems give three different answers about the same customer.</p>
+<p class="say">The registry is strict about security and fussy about formats. Most banks do that work once per channel - and then wonder why three systems give three different answers about the same customer.</p>
 
 <div class="ba">
   <figure>
@@ -394,7 +394,7 @@
   </div>
   <div>
     <h3>Get their record</h3>
-    <p>The registry asks for the customer's permission first. AQuA handles that — a one-time password, a face check, or a signed form for customers with no mobile.</p>
+    <p>The registry asks for the customer's permission first. AQuA handles that - a one-time password, a face check, or a signed form for customers with no mobile.</p>
   </div>
   <div>
     <h3>Add a new customer</h3>
@@ -420,7 +420,7 @@
   </div>
   <div>
     <h3>One trail of who did what</h3>
-    <p>Who asked, what permission was taken, who approved — written as the work happens, in one place, for when someone asks six months later.</p>
+    <p>Who asked, what permission was taken, who approved - written as the work happens, in one place, for when someone asks six months later.</p>
   </div>
 </div>
 </div></section>
@@ -428,8 +428,7 @@
 <section class="section alt"><div class="wrap">
 <h2 class="wide">Where it stands.</h2>
 <div class="plain">
-<p><strong>Working today:</strong> finding customers, getting their records with a one-time password, and adding new customers to the registry. All three are built and tested from end to end.</p>
-<p><strong>In build:</strong> re-KYC updates, face and signed-form permission, and pushing changes out to your other systems.</p>
+<p><strong>Working today:</strong> finding customers, getting their records with a one-time password, Updates, face and signed-form permission and adding new customers to the registry. All of them are built and tested from end to end.</p>
 <p><strong>What "tested" means here:</strong> AQuA runs against a copy of the registry we built from CERSAI's own API guide, with the same security it uses. That proves the software against the published specification. Before going live it needs a run on CERSAI's testbed with your bank's registration in place.</p>
 </div>
 </div></section>
@@ -439,7 +438,7 @@
 <div class="plain">
 <p>The software is ready. Three things belong to you, because the regulator says so: your <strong>CERSAI registration</strong>, your <strong>certificates and registered IP addresses</strong>, and your own <strong>security review</strong> of any vendor in this position.</p>
 <p>On our side, every build is scanned for code and dependency vulnerabilities before it ships, and security sits with our founder rather than being someone's side task.</p>
-<p>Your bank is the Reporting Entity. Every call is made under your code, with your credentials. AssetQuant is the connection and never becomes a party to your filing. CERSAI registers Reporting Entities, not technology vendors — so no one can honestly claim to be a "CERSAI-certified" product, and we don't.</p>
+<p>Your bank is the Reporting Entity. Every call is made under your code, with your credentials. AssetQuant is the connection and never becomes a party to your filing. CERSAI registers Reporting Entities, not technology vendors - so no one can honestly claim to be a "CERSAI-certified" product, and we don't.</p>
 </div>
 
 <details class="tech">
@@ -449,7 +448,7 @@
   <dt>Security</dt><dd>Mutual TLS with your client certificate, OAuth client credentials, and every payload signed then encrypted (JWS over JWE, RS256 / RSA-OAEP-256 / A256GCM) using your keys and CERSAI's certificates.</dd>
   <dt>Identifiers accepted</dt><dd>PAN, passport, voter ID, driving licence, Aadhaar, NREGA, NPR, CKYC number and CKYC reference. Several matching records are returned where they exist, each with its status.</dd>
   <dt>Consent routes</dt><dd>One-time password to the registry-held mobile, face authentication, or signed physical form. The password is never stored or logged.</dd>
-  <dt>Errors</dt><dd>The registry's codes are mapped to plain outcomes — not found, rejected with a reason, temporarily unavailable — with safe retries and idempotency keys so nothing is filed twice.</dd>
+  <dt>Errors</dt><dd>The registry's codes are mapped to plain outcomes - not found, rejected with a reason, temporarily unavailable - with safe retries and idempotency keys so nothing is filed twice.</dd>
   <dt>Deployment</dt><dd>Java and PostgreSQL, hosted in India on infrastructure you approve, with the outgoing IP addresses CERSAI needs to whitelist for your institution.</dd>
 </dl>
 </details>
